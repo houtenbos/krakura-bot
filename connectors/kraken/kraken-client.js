@@ -25,6 +25,32 @@ class KrakenClient{
     }
 
     /**
+     * get price
+     * @param {String}        currencyPair      Currency pair to be traded
+     * @param {String}        direction              Side, buy or sell
+     * @param {Number}        [volume]            Order volume
+     * @return {Promise<Number>}                        
+     */
+    async getPrice(currencyPair, direction, volume){
+        const orderbook = await this.getOrderbook(currencyPair, 500);
+        const side = direction == 'buy' ? 'asks' : 'bids';
+        let remainingVolume = volume;
+        if( !(remainingVolume > 0) )
+            return orderbook[side][0].price;
+
+        let weightedPrice = 0;
+        for( const order of orderbook[side] ){
+            const fillVolume = Math.min(order.volume, remainingVolume);
+            weightedPrice += order.price * fillVolume;
+            remainingVolume -= fillVolume;
+            if( remainingVolume <= 0 )
+                break;
+        }
+        const filledVolume = volume-remainingVolume;
+        return weightedPrice / filledVolume;
+    }
+
+    /**
      * createOrder places an order on kraken.
      * @param {String}        currencyPair      Currency pair to be traded
      * @param {String}        orderType         Order type - market|limit|stop-loss|take-profit|stop-loss-limit|take-profit-limit|settle-position 
@@ -147,15 +173,16 @@ class KrakenClient{
     /**
      * Gets the orderbook of a currencyPair
      * @param {String}        currencyPair  Currency Pair of the orderbook
+     * @param {Number}        [count=100]         number of orderbook enties
      * @return {Promise<Object>}                     Orderbook object w/ {bids: [{side, price, volume}, ...], asks: [{...}, ...]}
      */
-    async getOrderbook(currencyPair){
+    async getOrderbook(currencyPair, count=100){
         let orderbook = {};
         const book = {};
         const apiCurrencyPair = parseApiCurrencyPair(currencyPair);
 
         try{
-            const response = await this.client.api('Depth', {pair: apiCurrencyPair}, _.noop);
+            const response = await this.client.api('Depth', {pair: apiCurrencyPair, count}, _.noop);
             orderbook = Object.values(response.result)[0];
         }
         catch(error){
