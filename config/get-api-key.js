@@ -47,40 +47,41 @@ async function setKrakenApiCredentials(){
  * @return {Void}
  */
 function saveApiCredentials(key, secret, platform){
-	const path = `./config/${platform}-credentials`;
-	const encrypted = encryptpwd.encryptJSON({key, secret}, password);
+	const path = `./config/credentials`;
+	const encrypted = encryptpwd.encryptJSON({[platform]:{key, secret}}, password);
 	fs.writeFileSync(path, encrypted);
 }
 
 /**
- * @param {String} platform
- * @return {Promise<false|{key: any, secret: any}>}
+ * @return {Promise<Object>}>}
  */
-async function getApiCredentials(platform){
-	const path = `./config/${platform}-credentials`;
+async function getApiCredentials(){
+	const path = `./config/credentials`;
 	if( !fs.existsSync(path) )
-		return false;
+		return {};
 	
 	const encryptedCredentials = fs.readFileSync(path).toString();
 	if( !password )
 		await askPassword();
 
-	const credentials = encryptpwd.decryptJSON(encryptedCredentials, password);
-	if( !( 'key' in credentials && 'secret' in credentials) ){
+	try{
+		const credentials = encryptpwd.decryptJSON(encryptedCredentials, password);
+		return credentials;
+	}
+	catch(error){
 		throw new Error('Wrong password');
 	}
-	return credentials;
 }
 
 /**
  * Checks if credentials are stored, if not it creates new credentials
  * @param {String} platform
- * @return {Promise<false|{key: any, secret: any}>}
+ * @return {Promise<{key: String, secret: String}>}
  */
 async function getOrSetApi(platform){
-	const storedCredentials = await getApiCredentials(platform);
-	if( storedCredentials )
-		return storedCredentials;
+	const storedCredentials = await getApiCredentials();
+	if( storedCredentials[platform] )
+		return storedCredentials[platform];
 	
 	// no valid credentials yet
 	if( platform == 'kraken')
