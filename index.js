@@ -1,32 +1,17 @@
-import { Config } from 'apollo-server-core';
-import { GraphQLClient } from 'graphql-request';
-import { InterfaceType } from 'typescript';
-import { getSdk } from './src/generated/queries';
-
 const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./connectors/karura/karura-client");
 const Balance = require("./lib/balance");
+const Subquery = require('./build/connectors/karura/subquery');
 const { askPassword, getOrSetApi } = require("./config/get-api-key");
 
-interface maxTradeSize {
-    [key: string]: number
-}
-
-interface config {
-    currencies: Array<string>,
-    currencyPairs: Array<string>,
-    maxTradeSize: maxTradeSize
-    minProfitMargin: number
-}
-
-const config: config = {
+const config = {
 	currencies: ['KSM', 'KAR', 'USD', 'kUSD'],
 	currencyPairs: ['KSM/USD', 'KAR/USD'],
 	maxTradeSize: {
 		'KSM/USD': 1,
 		'KAR/USD': 10
 	},
-	minProfitMargin: 0.005,
+	minProfitMargin: 0.5/100,
 }
 
 const balances = new Map();
@@ -84,11 +69,16 @@ const balances = new Map();
 
 
 
-const client = new GraphQLClient(
-    'https://api.subquery.network/sq/matthewashley1/karura-bot-polkadothackaton',
-    { headers: {} });
-const sdk = getSdk(client);
-const response = sdk.Test().then((data) => console.log(data.query.blocks));
+
+/**
+ * Use of SubQuery example to fetch data
+ */
+const subQuery = new Subquery();
+subQuery.getToken("KSM")
+	.then((data) => console.log(data.query.token));
+
+
+
 
 
 // start kraken connector
@@ -101,16 +91,3 @@ const response = sdk.Test().then((data) => console.log(data.query.blocks));
 // execute 2 trades
 // calculate PnL
 // do accounting
-
-
-
-
-
-
-
-
-
-
-
-
-

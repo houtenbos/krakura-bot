@@ -8198,19 +8198,72 @@ export type _Metadata = {
   targetHeight?: Maybe<Scalars['Int']>;
 };
 
-export type TestQueryVariables = Exact<{ [key: string]: never; }>;
+export type TokensQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type TestQuery = { __typename?: 'Query', query: { __typename?: 'Query', blocks?: { __typename?: 'BlocksConnection', totalCount: number, nodes: Array<{ __typename?: 'Block', id: string } | null | undefined> } | null | undefined } };
+export type TokensQuery = { __typename?: 'Query', query: { __typename?: 'Query', tokens?: { __typename?: 'TokensConnection', totalCount: number, nodes: Array<{ __typename?: 'Token', id: string, name?: string | null | undefined, price?: string | null | undefined, volume?: string | null | undefined, volumeUSD?: string | null | undefined } | null | undefined> } | null | undefined } };
+
+export type TokenQueryVariables = Exact<{
+  name: Scalars['String'];
+}>;
 
 
-export const TestDocument = gql`
-    query Test {
+export type TokenQuery = { __typename?: 'Query', query: { __typename?: 'Query', token?: { __typename?: 'Token', id: string, name?: string | null | undefined, price?: string | null | undefined, volume?: string | null | undefined, volumeUSD?: string | null | undefined } | null | undefined } };
+
+export type AccountExtrinsicsQueryVariables = Exact<{
+  signerId: Scalars['String'];
+}>;
+
+
+export type AccountExtrinsicsQuery = { __typename?: 'Query', query: { __typename?: 'Query', extrinsics?: { __typename?: 'ExtrinsicsConnection', totalCount: number, nodes: Array<{ __typename?: 'Extrinsic', id: string, method?: string | null | undefined, section?: string | null | undefined, args?: any | null | undefined, signerId?: string | null | undefined, nonce?: any | null | undefined, timestamp?: any | null | undefined, signature?: string | null | undefined, isSigned?: boolean | null | undefined, isSuccess?: boolean | null | undefined, blockId?: string | null | undefined } | null | undefined> } | null | undefined } };
+
+
+export const TokensDocument = gql`
+    query Tokens {
   query {
-    blocks(first: 5) {
+    tokens {
       totalCount
       nodes {
         id
+        name
+        price
+        volume
+        volumeUSD
+      }
+    }
+  }
+}
+    `;
+export const TokenDocument = gql`
+    query Token($name: String!) {
+  query {
+    token(id: $name) {
+      id
+      name
+      price
+      volume
+      volumeUSD
+    }
+  }
+}
+    `;
+export const AccountExtrinsicsDocument = gql`
+    query AccountExtrinsics($signerId: String!) {
+  query {
+    extrinsics(filter: {signerId: {equalTo: $signerId}}, orderBy: TIMESTAMP_DESC) {
+      totalCount
+      nodes {
+        id
+        method
+        section
+        args
+        signerId
+        nonce
+        timestamp
+        signature
+        isSigned
+        isSuccess
+        blockId
       }
     }
   }
@@ -8224,8 +8277,14 @@ const defaultWrapper: SdkFunctionWrapper = (action, _operationName) => action();
 
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    Test(variables?: TestQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<TestQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<TestQuery>(TestDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Test');
+    Tokens(variables?: TokensQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<TokensQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<TokensQuery>(TokensDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Tokens');
+    },
+    Token(variables: TokenQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<TokenQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<TokenQuery>(TokenDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'Token');
+    },
+    AccountExtrinsics(variables: AccountExtrinsicsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AccountExtrinsicsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<AccountExtrinsicsQuery>(AccountExtrinsicsDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'AccountExtrinsics');
     }
   };
 }

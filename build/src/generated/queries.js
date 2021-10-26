@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSdk = exports.TestDocument = exports.UserProvisionsOrderBy = exports.TransfersOrderBy = exports.TotalLoanPositionsOrderBy = exports.TokensOrderBy = exports.TokenDayDataOrderBy = exports.SystemConstsOrderBy = exports.ProvisionPoolsOrderBy = exports.PriceRecordsOrderBy = exports.PriceBundlesOrderBy = exports.PoolsOrderBy = exports.PoolHourDataOrderBy = exports.PoolDayDataOrderBy = exports.OracleFeedRecordsOrderBy = exports.NftActionsOrderBy = exports.LoanPositionsOrderBy = exports.LoanParamsOrderBy = exports.LoanParamsHistoriesOrderBy = exports.LoanActionsOrderBy = exports.IncentiveActionsOrderBy = exports.HomaActionsOrderBy = exports.ExtrinsicsOrderBy = exports.EventsOrderBy = exports.DexesOrderBy = exports.DexDayDataOrderBy = exports.DexActionsOrderBy = exports.CallsOrderBy = exports.BlocksOrderBy = exports.AccountsOrderBy = void 0;
+exports.getSdk = exports.AccountExtrinsicsDocument = exports.TokenDocument = exports.TokensDocument = exports.UserProvisionsOrderBy = exports.TransfersOrderBy = exports.TotalLoanPositionsOrderBy = exports.TokensOrderBy = exports.TokenDayDataOrderBy = exports.SystemConstsOrderBy = exports.ProvisionPoolsOrderBy = exports.PriceRecordsOrderBy = exports.PriceBundlesOrderBy = exports.PoolsOrderBy = exports.PoolHourDataOrderBy = exports.PoolDayDataOrderBy = exports.OracleFeedRecordsOrderBy = exports.NftActionsOrderBy = exports.LoanPositionsOrderBy = exports.LoanParamsOrderBy = exports.LoanParamsHistoriesOrderBy = exports.LoanActionsOrderBy = exports.IncentiveActionsOrderBy = exports.HomaActionsOrderBy = exports.ExtrinsicsOrderBy = exports.EventsOrderBy = exports.DexesOrderBy = exports.DexDayDataOrderBy = exports.DexActionsOrderBy = exports.CallsOrderBy = exports.BlocksOrderBy = exports.AccountsOrderBy = void 0;
 const graphql_tag_1 = require("graphql-tag");
 var AccountsOrderBy;
 (function (AccountsOrderBy) {
@@ -642,13 +642,52 @@ var UserProvisionsOrderBy;
     UserProvisionsOrderBy["Token1IdAsc"] = "TOKEN1_ID_ASC";
     UserProvisionsOrderBy["Token1IdDesc"] = "TOKEN1_ID_DESC";
 })(UserProvisionsOrderBy = exports.UserProvisionsOrderBy || (exports.UserProvisionsOrderBy = {}));
-exports.TestDocument = (0, graphql_tag_1.default) `
-    query Test {
+exports.TokensDocument = (0, graphql_tag_1.default) `
+    query Tokens {
   query {
-    blocks(first: 5) {
+    tokens {
       totalCount
       nodes {
         id
+        name
+        price
+        volume
+        volumeUSD
+      }
+    }
+  }
+}
+    `;
+exports.TokenDocument = (0, graphql_tag_1.default) `
+    query Token($name: String!) {
+  query {
+    token(id: $name) {
+      id
+      name
+      price
+      volume
+      volumeUSD
+    }
+  }
+}
+    `;
+exports.AccountExtrinsicsDocument = (0, graphql_tag_1.default) `
+    query AccountExtrinsics($signerId: String!) {
+  query {
+    extrinsics(filter: {signerId: {equalTo: $signerId}}, orderBy: TIMESTAMP_DESC) {
+      totalCount
+      nodes {
+        id
+        method
+        section
+        args
+        signerId
+        nonce
+        timestamp
+        signature
+        isSigned
+        isSuccess
+        blockId
       }
     }
   }
@@ -657,8 +696,14 @@ exports.TestDocument = (0, graphql_tag_1.default) `
 const defaultWrapper = (action, _operationName) => action();
 function getSdk(client, withWrapper = defaultWrapper) {
     return {
-        Test(variables, requestHeaders) {
-            return withWrapper((wrappedRequestHeaders) => client.request(exports.TestDocument, variables, Object.assign(Object.assign({}, requestHeaders), wrappedRequestHeaders)), 'Test');
+        Tokens(variables, requestHeaders) {
+            return withWrapper((wrappedRequestHeaders) => client.request(exports.TokensDocument, variables, Object.assign(Object.assign({}, requestHeaders), wrappedRequestHeaders)), 'Tokens');
+        },
+        Token(variables, requestHeaders) {
+            return withWrapper((wrappedRequestHeaders) => client.request(exports.TokenDocument, variables, Object.assign(Object.assign({}, requestHeaders), wrappedRequestHeaders)), 'Token');
+        },
+        AccountExtrinsics(variables, requestHeaders) {
+            return withWrapper((wrappedRequestHeaders) => client.request(exports.AccountExtrinsicsDocument, variables, Object.assign(Object.assign({}, requestHeaders), wrappedRequestHeaders)), 'AccountExtrinsics');
         }
     };
 }

@@ -9,13 +9,14 @@
         "skipLibCheck": true,
         "strict": true,
         "noImplicitAny": true,
-        "outDir": "./build"
+        "outDir": "./build",
+        "allowJs": true
     },
     "compileOnSave": true,
-    "include": ["index.ts", "graphql_server/server.ts", "src/**/*"],
+    "include": ["graphql_server/server.ts", "connectors/karura/subquery.ts", "src/**/*"],
     "exclude": ["node_modules", "src/generated/*.ts", "src/graphql/*.ts"],
     "files": [
-        "index.ts",
-        "graphql_server/server.ts"
+        "graphql_server/server.ts",
+        "connectors/karura/subquery.ts"
     ]
 }
