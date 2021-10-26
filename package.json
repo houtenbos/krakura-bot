@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "codegen": "graphql-codegen --config codegen.yml",
-    "server": "node ./dist/graphql_server/server.js"
+    "server": "node ./build/graphql_server/server.js",
+    "start": "node ./build/index.js"
   },
   "repository": {
     "type": "git",
