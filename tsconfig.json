@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "commonjs",
+        "noImplicitReturns": false,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "skipLibCheck": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "outDir": "./build"
+    },
+    "compileOnSave": true,
+    "include": ["index.ts", "graphql_server/server.ts", "src/**/*"],
+    "exclude": ["node_modules", "src/generated/*.ts", "src/graphql/*.ts"],
+    "files": [
+        "index.ts",
+        "graphql_server/server.ts"
+    ]
+}

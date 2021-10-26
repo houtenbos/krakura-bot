@@ -4,7 +4,9 @@
   "description": "Arbitrage trading bot",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "codegen": "graphql-codegen --config codegen.yml",
+    "server": "node ./dist/graphql_server/server.js"
   },
   "repository": {
     "type": "git",
@@ -25,8 +27,21 @@
   },
   "homepage": "https://github.com/houtenbos/krakura-bot#readme",
   "dependencies": {
+    "graphql": "^15.6.1",
+    "graphql-request": "^3.6.1",
     "kraken-api": "^1.0.1",
     "lodash": "^4.17.21",
-    "reconnecting-websocket": "^4.4.0"
+    "reconnecting-websocket": "^4.4.0",
+    "typescript": "^4.4.4"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "2.2.1",
+    "@graphql-codegen/typescript": "2.2.4",
+    "@graphql-codegen/typescript-graphql-request": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^2.1.8",
+    "@graphql-codegen/typescript-resolvers": "2.3.2",
+    "@graphql-tools/graphql-file-loader": "^7.3.1",
+    "@graphql-tools/load": "^7.4.0",
+    "apollo-server": "^3.4.0"
   }
 }

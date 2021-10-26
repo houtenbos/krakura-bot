@@ -1,0 +1,12 @@
+query Test {
+    query {
+        blocks(
+            first: 5
+        ) {
+            totalCount
+            nodes {
+                id
+            }
+        }
+    }
+}
