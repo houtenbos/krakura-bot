@@ -1,5 +1,6 @@
 //@ts-check
 const KrakenAPI = require('kraken-api');
+const Client = require('../client');
 const _ = require('lodash');
 
 const apiCurrencyPairs = {};
@@ -8,13 +9,14 @@ const apiCurrencies = {};
 /**
  * KrakenClient connects to the Kraken.com API 
  */
-class KrakenClient{
+class KrakenClient extends Client{
     /**
 	 * @param {String}        key               API Key
 	 * @param {String}        secret            API Secret
 	 * @param {Object}        [logger=console]  A logger function, (default is console logging)
 	 */
     constructor(key, secret, logger = console){
+        super(key, secret);
         this.client = new KrakenAPI(key, secret, {timeout: 25000});
         this.logger = logger;
 		this.hasApiKey = !!key;
@@ -22,6 +24,48 @@ class KrakenClient{
         // load currency pair config
         this.currencyPairConfig = {};
         this.isReady = this.loadCurrencyPairConfig();
+    }
+
+    /**
+     * get price
+     * @param {String}        currencyPair      Currency pair to be traded
+     * @param {String}        direction              Side, buy or sell
+     * @param {Number}        [volume]            Order volume
+     * @param {'base'|'quote'}[volumeCurrency]           Order volume
+     * @return {Promise<Number>}                        
+     */
+    async getPrice(currencyPair, direction, volume, volumeCurrency = 'base'){
+        const orderbook = await this.getOrderbook(currencyPair, 500);
+        const side = direction == 'buy' ? 'asks' : 'bids';
+        let remainingVolume = volume;
+        if( !(remainingVolume > 0) )
+            return orderbook[side][0].price;
+
+        let weightedPrice = 0;
+        if( volumeCurrency == 'base' ){
+            for( const order of orderbook[side] ){
+                const fillVolume = Math.min(order.volume, remainingVolume);
+                weightedPrice += order.price * fillVolume;
+                remainingVolume -= fillVolume;
+                if( remainingVolume <= 0 )
+                    break;
+            }
+            const filledVolume = volume-remainingVolume;
+            weightedPrice /= filledVolume;
+        }
+        else{
+            let baseVolume = 0;
+            for( const order of orderbook[side] ){
+                const fillVolume = Math.min(order.volume * order.price, remainingVolume);
+                weightedPrice += fillVolume;
+                remainingVolume -= fillVolume;
+                baseVolume += fillVolume / order.price;
+                if( remainingVolume <= 0 )
+                    break;
+            }
+            weightedPrice /= baseVolume;
+        }
+        return weightedPrice;
     }
 
     /**
@@ -147,15 +191,16 @@ class KrakenClient{
     /**
      * Gets the orderbook of a currencyPair
      * @param {String}        currencyPair  Currency Pair of the orderbook
+     * @param {Number}        [count=100]         number of orderbook enties
      * @return {Promise<Object>}                     Orderbook object w/ {bids: [{side, price, volume}, ...], asks: [{...}, ...]}
      */
-    async getOrderbook(currencyPair){
+    async getOrderbook(currencyPair, count=100){
         let orderbook = {};
         const book = {};
         const apiCurrencyPair = parseApiCurrencyPair(currencyPair);
 
         try{
-            const response = await this.client.api('Depth', {pair: apiCurrencyPair}, _.noop);
+            const response = await this.client.api('Depth', {pair: apiCurrencyPair, count}, _.noop);
             orderbook = Object.values(response.result)[0];
         }
         catch(error){
@@ -170,15 +215,15 @@ class KrakenClient{
             book.bids.push({
                 id: '',
                 side: 'bids',
-                price: order[0],
-                volume: order[1],
+                price: +order[0],
+                volume: +order[1],
                 }));
         orderbook.asks.forEach(order =>
                 book.asks.push({
                     id: '',
                     side: 'asks',
-                    price: order[0],
-                    volume: order[1],
+                    price: +order[0],
+                    volume: +order[1],
                 }));
 
         // rewrite orderbook data to orderbook object format
@@ -393,6 +438,7 @@ class KrakenClient{
             throw new Error(`Refetched broken cancel, cannot find order ${id}`);
         }
 
+        // @ts-ignore
         switch(order.status){
             case 'open':
                 this.logger.warn('Broken cancel order is still open, retry cancelling');
@@ -451,6 +497,7 @@ class KrakenClient{
         if(!order) {
             // retry openening
             this.logger.warn(`Could not find broken order, appears not created:, ${JSON.stringify(payload)}`);
+            // @ts-ignore
             return this.createOrder(...payload);
         }
         else{
