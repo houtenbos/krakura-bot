@@ -13,10 +13,12 @@
         "allowJs": true
     },
     "compileOnSave": true,
-    "include": ["graphql_server/server.ts", "connectors/karura/subquery.ts", "src/**/*"],
+    "include": ["graphql_server/server.ts", "connectors/karura/subquery.ts", 
+        "connectors/karura/karura-client.ts", "src/**/*"],
     "exclude": ["node_modules", "src/generated/*.ts", "src/graphql/*.ts"],
     "files": [
         "graphql_server/server.ts",
-        "connectors/karura/subquery.ts"
+        "connectors/karura/subquery.ts",
+        "connectors/karura/karura-client.ts"
     ]
 }

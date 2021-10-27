@@ -29,6 +29,8 @@
   },
   "homepage": "https://github.com/houtenbos/krakura-bot#readme",
   "dependencies": {
+    "@acala-network/api": "^3.0.1",
+    "@polkadot/api": "^6.5.2",
     "encrypt-with-password": "^1.0.0",
     "graphql": "^15.6.1",
     "graphql-request": "^3.6.1",
