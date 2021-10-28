@@ -1,6 +1,7 @@
 const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./connectors/karura/karura-client");
 const Balance = require("./lib/balance");
+const Subquery = require('./build/connectors/karura/subquery');
 const { askPassword, getOrSetApi } = require("./config/get-api-key");
 
 const config = {
@@ -65,6 +66,21 @@ const balances = new Map();
 	}
 
 })();
+
+
+
+
+/**
+ * Use of SubQuery example to fetch data
+ */
+const subQuery = new Subquery();
+subQuery.getToken("KSM")
+	.then((data) => console.log(data.query.token));
+
+
+
+
+
 // start kraken connector
 // start karura connector
 

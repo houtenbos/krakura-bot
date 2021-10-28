@@ -1,0 +1,24 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "module": "commonjs",
+        "noImplicitReturns": false,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "sourceMap": false,
+        "skipLibCheck": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "outDir": "./build",
+        "allowJs": true
+    },
+    "compileOnSave": true,
+    "include": ["graphql_server/server.ts", "connectors/karura/subquery.ts", 
+        "connectors/karura/karura-client.ts", "src/**/*"],
+    "exclude": ["node_modules", "src/generated/*.ts", "src/graphql/*.ts"],
+    "files": [
+        "graphql_server/server.ts",
+        "connectors/karura/subquery.ts",
+        "connectors/karura/karura-client.ts"
+    ]
+}

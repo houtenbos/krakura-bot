@@ -1,0 +1,52 @@
+query Tokens {
+    query {
+        tokens {
+            totalCount
+            nodes {
+                id
+                name
+                price
+                volume
+                volumeUSD
+            }
+        }
+    }
+}
+
+query Token ($name: String!) {
+    query {
+        token (id: $name) {
+            id
+            name
+            price
+            volume
+            volumeUSD
+        }
+    }
+}
+
+query AccountExtrinsics ($signerId: String!) {
+    query {
+        extrinsics(
+            filter: {
+                signerId: {
+                    equalTo: $signerId
+                }
+        }, orderBy: TIMESTAMP_DESC) {
+            totalCount
+            nodes {
+                id
+                method
+                section
+                args
+                signerId
+                nonce
+                timestamp
+                signature
+                isSigned
+                isSuccess
+                blockId
+            } 
+        }
+    }
+}
