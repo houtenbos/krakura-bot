@@ -1,93 +1,87 @@
 const KrakenClient = require("./connectors/kraken/kraken-client");
-const KaruraClient = require("./connectors/karura/karura-client");
+const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./lib/balance");
-const Subquery = require('./build/connectors/karura/subquery');
-const { askPassword, getOrSetApi } = require("./config/get-api-key");
+const { askPassword, getOrSetApi } = require("./build/config/get-credentials");
 
 const config = {
-	currencies: ['KSM', 'KAR', 'USD', 'kUSD'],
-	currencyPairs: ['KSM/USD', 'KAR/USD'],
+	currencies: ['KSM', 'KAR', 'USD', 'KUSD'],
+	currencyPairs: ['KSM/USD'],
 	maxTradeSize: {
 		'KSM/USD': 1,
 		'KAR/USD': 10
 	},
 	minProfitMargin: 0.5/100,
+	crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
 }
 
-const balances = new Map();
+const clients = new Map();
 
 (async () => {
 	await askPassword();
 	const {key, secret} = await getOrSetApi('kraken');
+	const {address, phrase} = await getOrSetApi('karura');
 	const krakenClient = new KrakenClient(key, secret);
-	const karuraClient = new KaruraClient(key, secret);
+	const karuraClient = new KaruraClient(address, phrase, config.currencies);
+	await krakenClient.isReady;
+	await karuraClient.isReady;
 
-	balances.set('kraken', new Balance(krakenClient, config.currencies));
-	balances.set('karura', new Balance(karuraClient, config.currencies));
+	clients.set('kraken', krakenClient);
+	clients.set('karura', karuraClient);
+
+	const balance = new Balance([...clients.entries()], config.currencies);
+	await balance.isReady;
 
 	// check buy kraken sell karura opportunity
-	for( const currencyPair of config.currencyPairs){
-		const [base, quote] = currencyPair.split('/');
+	while( true ){
+		for( const [buyPlatform, sellPlatform] of config.crossPlatforms){
+			for( const currencyPair of config.currencyPairs){
+				const [base, quote] = currencyPair.split('/');
+				
+				// calculate trade volume
+				const buyVolumeQuote = balance.getBalance(buyPlatform, quote);
+				const buyPrice = await clients.get(buyPlatform).getPrice(currencyPair, 'buy', buyVolumeQuote);
+				const buyVolumeBase = buyVolumeQuote / buyPrice;
+				
+				const sellVolumeBase = balance.getBalance(sellPlatform, base);
+				const tradeVolume = Math.min(buyVolumeBase, sellVolumeBase, config.maxTradeSize[currencyPair]);
 		
-		// calculate trade volume
-		const buyVolumeQuote = balances.get('kraken').getBalance(quote);
-		const buyPrice = await krakenClient.getPrice(currencyPair, 'buy', buyVolumeQuote);
-		const buyVolumeBase = buyVolumeQuote / buyPrice;
+				// check for krakens minimum order volumes
+				if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] )
+					continue;
+				
+				// calculate profitability
+				const buyCostsGross = tradeVolume * buyPrice;
+				const buyFees = buyCostsGross * clients.get(buyPlatform).config.fees.taker;
+				const buyCostsNett = buyCostsGross + buyFees;
 		
-		const sellVolumeBase = balances.get('karura').getBalance(base);
-		const tradeVolume = Math.min(buyVolumeBase, sellVolumeBase, config.maxTradeSize[currencyPair]);
-
-		if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] )
-			continue;
+				const sellPrice = await karuraClient.getPrice(currencyPair, 'sell', tradeVolume);
+				const sellCostsGross = tradeVolume * sellPrice;
+				const sellFees = sellCostsGross * clients.get(sellPlatform).config.fees.taker;
+				const sellCostsNett = sellCostsGross - sellFees;
 		
-		// calculate profitability
-		const buyCostsGross = tradeVolume * buyPrice;
-		const buyFees = buyCostsGross * krakenClient.config.fees.taker;
-		const buyCostsNett = buyCostsGross + buyFees;
+				const PnL = sellCostsNett - buyCostsNett;
+				const profitMargin = PnL / buyCostsNett;
 
-		const sellPrice = await karuraClient.getPrice(currencyPair, 'sell', tradeVolume);
-		const sellCostsGross = tradeVolume * sellPrice;
-		const sellFees = sellCostsGross * karuraClient.config.fees.taker;
-		const sellCostsNett = sellCostsGross - sellFees;
-
-		const PnL = sellCostsNett - buyCostsNett;
-		const profitMargin = PnL / buyCostsNett;
-		if( profitMargin < config.minProfitMargin )
-			continue;
+				console.log(`Buy ${tradeVolume} ${base} @ ${buyPlatform} for ${buyPrice.toFixed(2)}, sell @ ${sellPlatform} for ${sellPrice.toFixed(2)}  - margin: ${profitMargin.toFixed(4)*100} %`);
+				if( profitMargin < config.minProfitMargin )
+					continue;
+				
 		
+				console.log('Profitable trade detected');
+				// make trade
+				const buyOrder = await clients.get(buyPlatform).createOrder(currencyPair, 'market', 'buy', tradeVolume);
+				const sellOrder = await clients.get(sellPlatform).createOrder(currencyPair, 'swap', 'sell', tradeVolume);
+		
+				// calculate profit and loss
+				const profitQuote = sellOrder.costs - (sellOrder.fees[quote] || 0) - buyOrder.costs - (buyOrder.fees[quote] || 0);
+				const profitBase = buyOrder.volumeExecuted - (buyOrder.fees[base] || 0) - sellOrder.volumeExecuted - (sellOrder.fees[base] || 0);
 
-		// make trade
-		const buyOrder = krakenClient.createOrder(currencyPair, 'market', 'buy', tradeVolume);
-		const sellOrder = karuraClient.createOrder(currencyPair, 'swap', 'sell', tradeVolume);
-
-		// calculate profit and loss
-		const profitQuote = sellOrder.costs - sellOrder.fees[quote] - buyOrder.costs - buyOrder.fees[quote];
-		const profitBase = buyOrder.volumeExecuted - buyOrder.fees[base] - sellOrder.volumeExecuted - sellOrder.fees[base];
+				console.log(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(2)} ${base}.`);
+				// now what? 
+				process.exit(0);
+			}
+		}
+		await new Promise(r => setTimeout(r, 1000));
 	}
 
 })();
-
-
-
-
-/**
- * Use of SubQuery example to fetch data
- */
-const subQuery = new Subquery();
-subQuery.getToken("KSM")
-	.then((data) => console.log(data.query.token));
-
-
-
-
-
-// start kraken connector
-// start karura connector
-
-// check balances
-// check prices
-
-// if trade opportunity
-// execute 2 trades
-// calculate PnL
-// do accounting

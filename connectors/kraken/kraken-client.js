@@ -22,8 +22,8 @@ class KrakenClient extends Client{
 		this.hasApiKey = !!key;
 
         // load currency pair config
-        this.currencyPairConfig = {};
-        this.isReady = this.loadCurrencyPairConfig();
+        this.config = {};
+        this.isReady = this.loadconfig();
     }
 
     /**
@@ -84,10 +84,10 @@ class KrakenClient extends Client{
 
 		await this.isReady;
         let volumeDecimals = 8, priceDecimals = 1, minimumVolume = 0.0002;
-        if( this.currencyPairConfig[currencyPair] ){
-            volumeDecimals = this.currencyPairConfig[currencyPair].volumeDecimals;
-            priceDecimals = this.currencyPairConfig[currencyPair].priceDecimals;
-            minimumVolume = this.currencyPairConfig[currencyPair].minimumVolume;
+        if( this.config[currencyPair] ){
+            volumeDecimals = this.config[currencyPair].volumeDecimals;
+            priceDecimals = this.config[currencyPair].priceDecimals;
+            minimumVolume = this.config[currencyPair].minimumVolume;
         }
 
         const roundedVolume = toFixedNoRounding(volume, volumeDecimals);
@@ -117,8 +117,8 @@ class KrakenClient extends Client{
         }
 
         try{
-            const response = await this.client.api('addOrder', param, _.noop);
-			return this.parseOrders(response);
+            const response = await this.client.api('AddOrder', param, _.noop);
+            return await this.checkOrder(response.result.txid[0]);
         }
         catch(error){
             return await this.handleErrors(error, this.createOrder, payload);
@@ -137,7 +137,7 @@ class KrakenClient extends Client{
         }
 
         try{
-            const response = await this.client.api('cancelOrder', param, _.noop);
+            const response = await this.client.api('CancelOrder', param, _.noop);
 			return response;
         }
         catch(error){
@@ -184,7 +184,8 @@ class KrakenClient extends Client{
     parseBalance(krakenBalance){
         const balance = {};
         for( const [c, b] of Object.entries(krakenBalance) ){
-            balance[c] = {total: parseFloat(b), free: parseFloat(b), placed: 0};
+            const currency = apiCurrencies[c];
+            balance[currency] = {total: parseFloat(b), free: parseFloat(b), placed: 0};
         }
         return balance;
     }
@@ -255,15 +256,15 @@ class KrakenClient extends Client{
         }
     }
 
-    async loadCurrencyPairConfig(){
-        if( !this.currencyPairConfig.currencyPairs ){
+    async loadconfig(){
+        if( !this.config.currencyPairs ){
             const assetPairs = await this.getAssetPairs();
-            this.currencyPairConfig = {currencyPairs: {}, pairDecimals: {}, volumeDecimals: {}, minOrderAmount: {}, minOrderVolume: {}};
+            this.config = {currencyPairs: {}, pairDecimals: {}, volumeDecimals: {}, minOrderAmount: {}, minOrderVolume: {}};
             for( const [key, value] of Object.entries(assetPairs) ){
-                const currencyPair = parseApiCurrencyPair(value.wsname) || value.wsname;
+                const currencyPair = value.wsname;
                 if( !currencyPair )continue;
 
-                this.currencyPairConfig[currencyPair] = {
+                this.config[currencyPair] = {
                     priceDecimals: value.pair_decimals,
                     volumeDecimals: value.lot_decimals,
                     minimumVolume: value.ordermin *1,
@@ -271,11 +272,11 @@ class KrakenClient extends Client{
                     altName: value.altname,
                     feeCurrency: value.fee_volume_currency
                 };
-                this.currencyPairConfig.currencyPairs[currencyPair] = key;
-                this.currencyPairConfig.volumeDecimals[currencyPair] = value.lot_decimals;
-                this.currencyPairConfig.pairDecimals[currencyPair] = value.pair_decimals;
-                this.currencyPairConfig.minOrderVolume[currencyPair] = +value.ordermin;
-                this.currencyPairConfig.minOrderAmount[currencyPair] = undefined;
+                this.config.currencyPairs[currencyPair] = key;
+                this.config.volumeDecimals[currencyPair] = value.lot_decimals;
+                this.config.pairDecimals[currencyPair] = value.pair_decimals;
+                this.config.minOrderVolume[currencyPair] = +value.ordermin;
+                this.config.minOrderAmount[currencyPair] = undefined;
                 // save currencypairs
                 apiCurrencyPairs[key] = currencyPair;
                 apiCurrencyPairs[value.altname] = currencyPair;
@@ -286,7 +287,7 @@ class KrakenClient extends Client{
             }
 			if( this.hasApiKey ){
 				const fees = await this.getFees();
-				this.currencyPairConfig.fees = {taker: +fees?.result?.fees?.XXBTZEUR?.fee/100 || undefined, maker: +fees?.result?.fees_maker?.XXBTZEUR?.fee/100 || 0};
+				this.config.fees = {taker: +fees?.result?.fees?.XXBTZEUR?.fee/100 || undefined, maker: +fees?.result?.fees_maker?.XXBTZEUR?.fee/100 || 0};
 			}
 		}
     }
@@ -342,11 +343,11 @@ class KrakenClient extends Client{
         const result = [];
         for( const [txid, order] of Object.entries(orders) ){
             const currencyPair = parseApiCurrencyPair(order.descr.pair);
+            const feeCurrency = currencyPair.split('/')[1]; 
             const o = {
                 txid,
                 costs: parseFloat(order.cost),
-                fees: parseFloat(order.fee),
-                feeCurrency: currencyPair.split('/')[1],
+                fees: {[feeCurrency]: +order.fee},
                 orderId: txid,
                 timeOpened: new Date(order.opentm * 1000),
                 orderType: order.descr.ordertype,
