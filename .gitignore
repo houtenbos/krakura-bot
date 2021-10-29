@@ -110,3 +110,6 @@ dist
 
 # Testing files
 test.js
+
+# TypeScript debug mappings
+*.js.map

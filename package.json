@@ -30,7 +30,11 @@
   "homepage": "https://github.com/houtenbos/krakura-bot#readme",
   "dependencies": {
     "@acala-network/api": "^3.0.1",
+    "@acala-network/app-util": "^3.0.2",
+    "@acala-network/sdk-swap": "^3.0.2",
+    "@acala-network/sdk-wallet": "^3.0.2",
     "@polkadot/api": "^6.5.2",
+    "@polkadot/keyring": "^7.6.1",
     "encrypt-with-password": "^1.0.0",
     "graphql": "^15.6.1",
     "graphql-request": "^3.6.1",
