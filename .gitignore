@@ -107,3 +107,6 @@ dist
 
 # VScode settings
 .vscode
+
+# TypeScript debug mappings
+*.js.map
