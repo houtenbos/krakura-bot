@@ -25,8 +25,12 @@ interface KaruraClient {
 }
 const availableCurrencies = ["KAR", "KUSD", "BNC", "LKSM", "KSM"];
 
+/**
+ * KaruraClient connects to the Polkadot.js API 
+ */
 class KaruraClient {
     constructor(address: string, phrase: string, currencies: string[], logger: Console = console) {
+
         this.address = address;
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
         this.logger = logger;
@@ -108,6 +112,7 @@ class KaruraClient {
         let resolveHook: Function, rejectHook: Function;
         const p = new Promise((r, rj) => {resolveHook = r, rejectHook = rj});
 
+
         setTimeout(() => {rejectHook()}, TIMEOUT);
 
         await this.api.tx.dex.swapWithExactSupply(
@@ -172,13 +177,19 @@ class KaruraClient {
             return {free: 0, placed: 0, total: 0};
     }
 
-    async getFees(recipient: string, sender: string) {
+    /**
+     * Gets potential fees for a transaction on Karura
+     * 
+     * @param {string}      recipient   transaction receiver address
+     * @returns {Promise<RuntimeDispatchInfo>}
+     */
+    async getFees(recipient: string) {
         const api = new ApiPromise(options({ provider: this.provider }));
         await api.isReadyOrError;
 
         const info = await api.tx.balances
             .transfer(recipient, 123)
-            .paymentInfo(sender);
+            .paymentInfo(this.address);
 
         const [amount, unit] = info.partialFee.toHuman().split(" ");
         return `KAR`;
@@ -202,8 +213,30 @@ class KaruraClient {
         }
     }    
 
+
+    /**
+     * Transfers a token from the class address to a recipient Karura account address
+     * 
+     * @param {string}      recipient   transfer receiver address 
+     * @param {string}      token   id of token to transfer - Examples "KSM", "KAR" 
+     * @param {string}      amount  amount of tokens to transfer 
+     */
+    async transfer(recipient: string, token: string, amount: string) {
+        const api = new ApiPromise(options({ provider: this.provider }));
+        await api.isReadyOrError;
+
+        this.accountData().then((data) => this.logger.log("Before transfer account data", data));
+
+        const hash = await api.tx.currencies
+            .transfer(recipient, { Token: token,}, amount)
+            .signAndSend(this.address);
+
+        this.logger.log("Transfer sent with hash", hash.toHex());
+    }
+
     toNumber(amount: string, unit: string = "Plank" ){
         return +amount.replace(/,/g, '') * 1e-12;
+
     }
 }
 

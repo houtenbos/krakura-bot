@@ -108,5 +108,8 @@ dist
 # VScode settings
 .vscode
 
+# Testing files
+test.js
+
 # TypeScript debug mappings
 *.js.map
