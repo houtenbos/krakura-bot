@@ -19,7 +19,7 @@ function askPassword() {
         if (process.env.KRAKURA_PASSWORD)
             return password = process.env.KRAKURA_PASSWORD;
         const response = yield prompts({
-            type: 'text',
+            type: 'password',
             name: 'password',
             message: 'Fill in your password',
             validate: (password) => !(typeof (password) == 'string' && password.length >= 4) ? `Please enter a password with more than 3 characters` : true
