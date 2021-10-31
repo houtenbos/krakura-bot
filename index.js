@@ -31,6 +31,9 @@ const clients = new Map();
 	const balance = new Balance([...clients.entries()], config.currencies);
 	await balance.isReady;
 
+	console.log("Credentials configured");
+	console.log("Looking for profitable trades");
+
 	// check buy kraken sell karura opportunity
 	while( true ){
 		for( const [buyPlatform, sellPlatform] of config.crossPlatforms){

@@ -2,13 +2,14 @@
     "compilerOptions": {
         "target": "ES6",
         "module": "commonjs",
+        "moduleResolution": "node",
         "noImplicitReturns": false,
         "removeComments": false,
         "preserveConstEnums": true,
         "sourceMap": true,
         "skipLibCheck": true,
-        "strict": true,
-        "noImplicitAny": true,
+        "strict": false,
+        "noImplicitAny": false,
         "outDir": "./build",
         "allowJs": true,
     },
@@ -19,6 +20,7 @@
     "files": [
         "graphql_server/server.ts",
         "connectors/karura/subquery.ts",
-        "connectors/karura/karura-client.ts"
+        "connectors/karura/karura-client.ts",
+        "config/get-credentials.ts"
     ]
 }

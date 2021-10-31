@@ -708,3 +708,4 @@ function getSdk(client, withWrapper = defaultWrapper) {
     };
 }
 exports.getSdk = getSdk;
+//# sourceMappingURL=queries.js.map

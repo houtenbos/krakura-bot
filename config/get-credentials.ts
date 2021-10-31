@@ -12,7 +12,7 @@ export async function askPassword(){
 		return password = process.env.KRAKURA_PASSWORD;
 
 	const response = await prompts({
-		type: 'text',
+		type: 'password',
 		name: 'password',
 		message: 'Fill in your password',
 		validate: (password: string | any[]) => !(typeof(password) == 'string' && password.length >= 4 ) ? `Please enter a password with more than 3 characters` : true
@@ -39,13 +39,13 @@ export async function getOrSetApi(platform: platform): Promise<credentials>{
 
 async function setKrakenApiCredentials(): Promise<{ key: string; secret: string; }>{
 	const response: {key: string, secret: string} = await prompts([{
-		type: 'text',
+		type: 'password',
 		name: 'key',
 		message: 'What is your kraken api key?',
 		validate: (key: string | any[]) => !(typeof(key) == 'string' && key.length > 5 ) ? `Please enter valid key` : true
 	},
 	{
-		type: 'text',
+		type: 'password',
 		name: 'secret',
 		message: 'What is your kraken api secret?',
 		validate: (secret: string | any[]) => !(typeof(secret) == 'string' && secret.length > 8 ) ? `Please enter valid secret` : true
@@ -59,13 +59,13 @@ async function setKrakenApiCredentials(): Promise<{ key: string; secret: string;
 
 async function setKaruraCredentials(): Promise<{ address: string; phrase: string }>{
 	const response: {address: string, phrase: string} = await prompts([{
-		type: 'text',
+		type: 'password',
 		name: 'address',
 		message: 'What is your karura address?',
 		validate: (address: string ) => !(typeof(address) == 'string' && address.length > 5 ) ? `Please enter an valid address` : true
 	},
 	{
-		type: 'text',
+		type: 'password',
 		name: 'phrase',
 		message: 'What is your karura phrase?',
 		validate: (phrase: string | any[]) => !(typeof(phrase) == 'string' && phrase.length > 8 ) ? `Please enter valid phrase` : true

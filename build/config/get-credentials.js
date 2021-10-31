@@ -19,7 +19,7 @@ function askPassword() {
         if (process.env.KRAKURA_PASSWORD)
             return password = process.env.KRAKURA_PASSWORD;
         const response = yield prompts({
-            type: 'text',
+            type: 'password',
             name: 'password',
             message: 'Fill in your password',
             validate: (password) => !(typeof (password) == 'string' && password.length >= 4) ? `Please enter a password with more than 3 characters` : true
@@ -48,13 +48,13 @@ exports.getOrSetApi = getOrSetApi;
 function setKrakenApiCredentials() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield prompts([{
-                type: 'text',
+                type: 'password',
                 name: 'key',
                 message: 'What is your kraken api key?',
                 validate: (key) => !(typeof (key) == 'string' && key.length > 5) ? `Please enter valid key` : true
             },
             {
-                type: 'text',
+                type: 'password',
                 name: 'secret',
                 message: 'What is your kraken api secret?',
                 validate: (secret) => !(typeof (secret) == 'string' && secret.length > 8) ? `Please enter valid secret` : true
@@ -68,13 +68,13 @@ function setKrakenApiCredentials() {
 function setKaruraCredentials() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield prompts([{
-                type: 'text',
+                type: 'password',
                 name: 'address',
                 message: 'What is your karura address?',
                 validate: (address) => !(typeof (address) == 'string' && address.length > 5) ? `Please enter an valid address` : true
             },
             {
-                type: 'text',
+                type: 'password',
                 name: 'phrase',
                 message: 'What is your karura phrase?',
                 validate: (phrase) => !(typeof (phrase) == 'string' && phrase.length > 8) ? `Please enter valid phrase` : true
