@@ -2,17 +2,7 @@ const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./lib/balance");
 const { askPassword, getOrSetApi } = require("./build/config/get-credentials");
-
-const config = {
-	currencies: ['KSM', 'KAR', 'USD', 'KUSD'],
-	currencyPairs: ['KSM/USD'],
-	maxTradeSize: {
-		'KSM/USD': 1,
-		'KAR/USD': 10
-	},
-	minProfitMargin: 0.95/100,
-	crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
-}
+const config = require("./config/trading-config");
 
 const clients = new Map();
 
@@ -28,7 +18,7 @@ const clients = new Map();
 	clients.set('kraken', krakenClient);
 	clients.set('karura', karuraClient);
 
-	const balance = new Balance([...clients.entries()], config.currencies);
+	let balance = new Balance([...clients.entries()], config.currencies);
 	await balance.isReady;
 
 	// check buy kraken sell karura opportunity
@@ -77,8 +67,11 @@ const clients = new Map();
 				const profitBase = buyOrder.volumeExecuted - (buyOrder.fees[base] || 0) - sellOrder.volumeExecuted - (sellOrder.fees[base] || 0);
 
 				console.log(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(5)} ${base}.`);
-				// now what? 
-				process.exit(0);
+
+
+				// refresh balance by getting the balances from the platforms
+				balance = new Balance([...clients.entries()], config.currencies);
+				await balance.isReady;
 			}
 		}
 		await new Promise(r => setTimeout(r, 1000));
