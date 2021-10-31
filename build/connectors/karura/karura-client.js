@@ -11,24 +11,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const api_1 = require("@acala-network/api");
 const api_2 = require("@polkadot/api");
-
 const wasm_crypto_1 = require("@polkadot/wasm-crypto");
 const sdk_wallet_1 = require("@acala-network/sdk-wallet");
 const sdk_swap_1 = require("@acala-network/sdk-swap");
 const sdk_core_1 = require("@acala-network/sdk-core");
 const TIMEOUT = 30 * 1000;
 const availableCurrencies = ["KAR", "KUSD", "BNC", "LKSM", "KSM"];
-      
- /**
+/**
  * KaruraClient connects to the Polkadot.js API
  */
 class KaruraClient {
-     /**
-     * @param {string}      address  Karura account address
-     * @param {string}      phrase   Karura account phrase
-     * @param {string[]}    currencies
-     * @param {Object}      [logger=console]    A logger function, (default is console logging)
-     */
     constructor(address, phrase, currencies, logger = console) {
         this.address = address;
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
@@ -46,12 +38,6 @@ class KaruraClient {
         this.isReady = Promise.all([this.api.isReadyOrError, (0, wasm_crypto_1.waitReady)()]);
         this.config = { fees: { maker: 0.3 / 100, taker: 0.3 / 100 } };
     }
-    /**
-     * Retrieves account data for the Karura account address of the class
-     *
-     * @returns {Promise<FrameSystemAccountInfo>}
-     */
-    accountData() {
     getPrice(currencyPair, direction, volume, volumeCurrency = 'base') {
         return __awaiter(this, void 0, void 0, function* () {
             if (volume == 0)
@@ -197,9 +183,6 @@ class KaruraClient {
             total: free + frozen + reserved
         };
     }
-    toNumber(amount, unit = "Plank") {
-        return +amount.replace(/,/g, '') * 1e-12;
-    }
     /**
      * Transfers a token from the class address to a recipient Karura account address
      *
@@ -217,6 +200,9 @@ class KaruraClient {
                 .signAndSend(this.address);
             this.logger.log("Transfer sent with hash", hash.toHex());
         });
+    }
+    toNumber(amount, unit = "Plank") {
+        return +amount.replace(/,/g, '') * 1e-12;
     }
 }
 module.exports = KaruraClient;

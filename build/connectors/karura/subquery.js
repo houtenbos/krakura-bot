@@ -32,3 +32,4 @@ class Subquery {
     }
 }
 module.exports = Subquery;
+//# sourceMappingURL=subquery.js.map
