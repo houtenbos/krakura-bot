@@ -2,17 +2,7 @@ const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./lib/balance");
 const { askPassword, getOrSetApi } = require("./build/config/get-credentials");
-
-const config = {
-	currencies: ['KSM', 'KAR', 'USD', 'KUSD'],
-	currencyPairs: ['KSM/USD'],
-	maxTradeSize: {
-		'KSM/USD': 1,
-		'KAR/USD': 10
-	},
-	minProfitMargin: 0.5/100,
-	crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
-}
+const config = require("./config/trading-config");
 
 const clients = new Map();
 
@@ -28,7 +18,7 @@ const clients = new Map();
 	clients.set('kraken', krakenClient);
 	clients.set('karura', karuraClient);
 
-	const balance = new Balance([...clients.entries()], config.currencies);
+	let balance = new Balance([...clients.entries()], config.currencies);
 	await balance.isReady;
 
 	console.log("Credentials configured");
@@ -57,7 +47,7 @@ const clients = new Map();
 				const buyFees = buyCostsGross * clients.get(buyPlatform).config.fees.taker;
 				const buyCostsNett = buyCostsGross + buyFees;
 		
-				const sellPrice = await karuraClient.getPrice(currencyPair, 'sell', tradeVolume);
+				const sellPrice = await clients.get(sellPlatform).getPrice(currencyPair, 'sell', tradeVolume);
 				const sellCostsGross = tradeVolume * sellPrice;
 				const sellFees = sellCostsGross * clients.get(sellPlatform).config.fees.taker;
 				const sellCostsNett = sellCostsGross - sellFees;
@@ -79,9 +69,12 @@ const clients = new Map();
 				const profitQuote = sellOrder.costs - (sellOrder.fees[quote] || 0) - buyOrder.costs - (buyOrder.fees[quote] || 0);
 				const profitBase = buyOrder.volumeExecuted - (buyOrder.fees[base] || 0) - sellOrder.volumeExecuted - (sellOrder.fees[base] || 0);
 
-				console.log(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(2)} ${base}.`);
-				// now what? 
-				process.exit(0);
+				console.log(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(5)} ${base}.`);
+
+
+				// refresh balance by getting the balances from the platforms
+				balance = new Balance([...clients.entries()], config.currencies);
+				await balance.isReady;
 			}
 		}
 		await new Promise(r => setTimeout(r, 1000));
