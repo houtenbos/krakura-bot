@@ -58,12 +58,13 @@ async function setKrakenApiCredentials(): Promise<{ key: string; secret: string;
 }
 
 async function setKaruraCredentials(): Promise<{ address: string; phrase: string }>{
-	const response: {address: string, phrase: string} = await prompts([{
-		type: 'password',
-		name: 'address',
-		message: 'What is your karura address?',
-		validate: (address: string ) => !(typeof(address) == 'string' && address.length > 5 ) ? `Please enter an valid address` : true
-	},
+	const response: {address: string, phrase: string} = await prompts([
+	// 	{
+	// 	type: 'password',
+	// 	name: 'address',
+	// 	message: 'What is your karura address?',
+	// 	validate: (address: string ) => !(typeof(address) == 'string' && address.length > 5 ) ? `Please enter an valid address` : true
+	// },
 	{
 		type: 'password',
 		name: 'phrase',

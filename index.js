@@ -36,8 +36,10 @@ const clients = new Map();
 				const tradeVolume = Math.min(buyVolumeBase, sellVolumeBase, config.maxTradeSize[currencyPair]);
 		
 				// check for krakens minimum order volumes
-				if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] )
+				if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] ){
+					console.log(`Order too small to place on kraken. Order size: ${tradeVolume}, min order size: ${krakenClient.config.minOrderVolume[currencyPair]}`);
 					continue;
+				}
 				
 				// calculate profitability
 				const buyCostsGross = tradeVolume * buyPrice;
@@ -53,8 +55,9 @@ const clients = new Map();
 				const profitMargin = PnL / buyCostsNett;
 
 				console.log(`Buy ${tradeVolume} ${base} @ ${buyPlatform} for ${buyPrice.toFixed(2)}, sell @ ${sellPlatform} for ${sellPrice.toFixed(2)}  - margin: ${profitMargin.toFixed(4)*100} %`);
-				if( profitMargin < config.minProfitMargin )
+				if( profitMargin < config.minProfitMargin ){
 					continue;
+				}
 				
 		
 				console.log('Profitable trade detected');

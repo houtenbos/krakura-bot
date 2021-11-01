@@ -34,6 +34,7 @@ class KaruraClient {
         this.keyring = new api_2.Keyring({ type: 'sr25519' });
         (0, wasm_crypto_1.waitReady)().then(() => {
             this.key = this.keyring.addFromMnemonic(phrase);
+            this.address = this.keyring.getPairs()[0].address;
         });
         this.isReady = Promise.all([this.api.isReadyOrError, (0, wasm_crypto_1.waitReady)()]);
         this.config = { fees: { maker: 0.3 / 100, taker: 0.3 / 100 } };
