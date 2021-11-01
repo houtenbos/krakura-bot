@@ -1,7 +1,7 @@
 const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./lib/balance");
-const { askPassword, getOrSetApi } = require("./build/config/get-credentials");
+const { askPassword, getOrSetApi } = require("./build/lib/get-credentials");
 const config = require("./config/trading-config");
 
 const clients = new Map();
