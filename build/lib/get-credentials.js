@@ -68,12 +68,6 @@ function setKrakenApiCredentials() {
 function setKaruraCredentials() {
     return __awaiter(this, void 0, void 0, function* () {
         const response = yield prompts([
-            // 	{
-            // 	type: 'password',
-            // 	name: 'address',
-            // 	message: 'What is your karura address?',
-            // 	validate: (address: string ) => !(typeof(address) == 'string' && address.length > 5 ) ? `Please enter an valid address` : true
-            // },
             {
                 type: 'password',
                 name: 'phrase',
