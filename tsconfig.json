@@ -15,12 +15,12 @@
     },
     "compileOnSave": true,
     "include": ["graphql_server/server.ts", "connectors/karura/subquery.ts", 
-        "connectors/karura/karura-client.ts", "src/**/*", "config/get-credentials.ts"],
+        "connectors/karura/karura-client.ts", "src/**/*", "lib/get-credentials.ts"],
     "exclude": ["node_modules", "src/generated/*.ts", "src/graphql/*.ts"],
     "files": [
         "graphql_server/server.ts",
         "connectors/karura/subquery.ts",
         "connectors/karura/karura-client.ts",
-        "config/get-credentials.ts"
+        "lib/get-credentials.ts"
     ]
 }

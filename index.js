@@ -1,7 +1,7 @@
 const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./lib/balance");
-const { askPassword, getOrSetApi } = require("./build/config/get-credentials");
+const { askPassword, getOrSetApi } = require("./build/lib/get-credentials");
 const config = require("./config/trading-config");
 
 const clients = new Map();
@@ -39,8 +39,10 @@ const clients = new Map();
 				const tradeVolume = Math.min(buyVolumeBase, sellVolumeBase, config.maxTradeSize[currencyPair]);
 		
 				// check for krakens minimum order volumes
-				if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] )
+				if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] ){
+					console.log(`Order too small to place on kraken. Order size: ${tradeVolume}, min order size: ${krakenClient.config.minOrderVolume[currencyPair]}`);
 					continue;
+				}
 				
 				// calculate profitability
 				const buyCostsGross = tradeVolume * buyPrice;
@@ -56,8 +58,9 @@ const clients = new Map();
 				const profitMargin = PnL / buyCostsNett;
 
 				console.log(`Buy ${tradeVolume} ${base} @ ${buyPlatform} for ${buyPrice.toFixed(2)}, sell @ ${sellPlatform} for ${sellPrice.toFixed(2)}  - margin: ${profitMargin.toFixed(4)*100} %`);
-				if( profitMargin < config.minProfitMargin )
+				if( profitMargin < config.minProfitMargin ){
 					continue;
+				}
 				
 		
 				console.log('Profitable trade detected');

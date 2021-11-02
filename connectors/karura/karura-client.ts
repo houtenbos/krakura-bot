@@ -34,7 +34,7 @@ class KaruraClient {
         this.address = address;
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
         this.logger = logger;
-        this.provider = new WsProvider("wss://karura.api.onfinality.io/public-ws");
+        this.provider = new WsProvider("wss://karura-rpc-0.aca-api.network");
         this.api = new ApiPromise(options({ provider: this.provider }));
         this.api.isReadyOrError.then(() => {
             this.wallet = new WalletPromise(this.api);
@@ -43,6 +43,7 @@ class KaruraClient {
         this.keyring = new Keyring({ type: 'sr25519' });
         waitReady().then(() => {
             this.key = this.keyring.addFromMnemonic(phrase);
+            this.address = this.keyring.getPairs()[0].address;
         });
         this.isReady = Promise.all([this.api.isReadyOrError, waitReady()]);
         this.config = {fees: {maker: 0.3/100, taker: 0.3/100}};
@@ -103,7 +104,11 @@ class KaruraClient {
         else{
             supplyAmount = new FixedPointNumber(volume * price, supplyToken.decimal);
         }
-        const parameters: SwapParameters | undefined = await this.swap.swap(path, supplyAmount, "EXACT_INPUT");
+        const parameters = await this.swap.swap(path, supplyAmount, "EXACT_INPUT");
+        if( !parameters ){
+            this.logger.error(`Could not get trade parameters, check connection.`);
+            return {costs: 0, volumeExecuted: 0, fees: {}, timeClosed: undefined};
+        }
 
         const beforeSupplyBalance = await this.wallet.queryBalance(this.key.address, supplyToken);
         const beforeTargetBalance = await this.wallet.queryBalance(this.key.address, targetToken);
@@ -161,19 +166,14 @@ class KaruraClient {
     async accountData(token: string) {
         await this.isReady;
 
-        let balance: Codec | undefined;
         try{
-            balance = await this.api.query.tokens.accounts(this.address, {Token: token }) as Codec;
+            const balance = await this.api.query.tokens.accounts(this.address, {Token: token }) as Codec;
+            return this.parseBalance(balance.toHuman())
         }
         catch(error){
             this.logger.error(`Could not get ${token} balance`);
-        }
-
-        if( !!balance ){
-            return this.parseBalance(balance.toHuman()); 
-        }
-        else
             return {free: 0, placed: 0, total: 0};
+        }
     }
 
     /**
