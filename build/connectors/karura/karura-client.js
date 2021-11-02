@@ -183,24 +183,6 @@ class KaruraClient {
             total: free + frozen + reserved
         };
     }
-    /**
-     * Transfers a token from the class address to a recipient Karura account address
-     *
-     * @param {string}      recipient   transfer receiver address
-     * @param {string}      token   id of token to transfer - Examples "KSM", "KAR"
-     * @param {string}      amount  amount of tokens to transfer
-     */
-    transfer(recipient, token, amount) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const api = new api_2.ApiPromise((0, api_1.options)({ provider: this.provider }));
-            yield api.isReadyOrError;
-            this.accountData().then((data) => this.logger.log("Before transfer account data", data));
-            const hash = yield api.tx.currencies
-                .transfer(recipient, { Token: token, }, amount)
-                .signAndSend(this.address);
-            this.logger.log("Transfer sent with hash", hash.toHex());
-        });
-    }
     toNumber(amount, unit = "Plank") {
         return +amount.replace(/,/g, '') * 1e-12;
     }
