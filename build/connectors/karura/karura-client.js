@@ -25,7 +25,7 @@ class KaruraClient {
         this.address = address;
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
         this.logger = logger;
-        this.provider = new api_2.WsProvider("wss://karura.api.onfinality.io/public-ws");
+        this.provider = new api_2.WsProvider("wss://karura-rpc-0.aca-api.network");
         this.api = new api_2.ApiPromise((0, api_1.options)({ provider: this.provider }));
         this.api.isReadyOrError.then(() => {
             this.wallet = new sdk_wallet_1.WalletPromise(this.api);
@@ -34,6 +34,7 @@ class KaruraClient {
         this.keyring = new api_2.Keyring({ type: 'sr25519' });
         (0, wasm_crypto_1.waitReady)().then(() => {
             this.key = this.keyring.addFromMnemonic(phrase);
+            this.address = this.keyring.getPairs()[0].address;
         });
         this.isReady = Promise.all([this.api.isReadyOrError, (0, wasm_crypto_1.waitReady)()]);
         this.config = { fees: { maker: 0.3 / 100, taker: 0.3 / 100 } };
@@ -88,6 +89,10 @@ class KaruraClient {
                 supplyAmount = new sdk_core_1.FixedPointNumber(volume * price, supplyToken.decimal);
             }
             const parameters = yield this.swap.swap(path, supplyAmount, "EXACT_INPUT");
+            if (!parameters) {
+                this.logger.error(`Could not get trade parameters, check connection.`);
+                return { costs: 0, volumeExecuted: 0, fees: {}, timeClosed: undefined };
+            }
             const beforeSupplyBalance = yield this.wallet.queryBalance(this.key.address, supplyToken);
             const beforeTargetBalance = yield this.wallet.queryBalance(this.key.address, targetToken);
             // Exec Exchange
@@ -136,18 +141,14 @@ class KaruraClient {
     accountData(token) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.isReady;
-            let balance;
             try {
-                balance = (yield this.api.query.tokens.accounts(this.address, { Token: token }));
+                const balance = yield this.api.query.tokens.accounts(this.address, { Token: token });
+                return this.parseBalance(balance.toHuman());
             }
             catch (error) {
                 this.logger.error(`Could not get ${token} balance`);
-            }
-            if (!!balance) {
-                return this.parseBalance(balance.toHuman());
-            }
-            else
                 return { free: 0, placed: 0, total: 0 };
+            }
         });
     }
     /**
