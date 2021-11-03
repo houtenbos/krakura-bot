@@ -1,12 +1,12 @@
 import { options } from "@acala-network/api";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { waitReady } from "@polkadot/wasm-crypto";
-import { Fixed18, convertToFixed18, calcSwapTargetAmount } from '@acala-network/app-util';
 import { Codec } from "@polkadot/types/types";
 import { WalletPromise } from "@acala-network/sdk-wallet";
 import { SwapPromise } from "@acala-network/sdk-swap";
 import { FixedPointNumber, Token } from "@acala-network/sdk-core";
 import { KeyringPair } from "@polkadot/keyring/types";
+import { SwapParameters } from "@acala-network/sdk-swap/swap-parameters";
 
 const TIMEOUT = 30*1000;
 
@@ -117,7 +117,6 @@ class KaruraClient {
         let resolveHook: Function, rejectHook: Function;
         const p = new Promise((r, rj) => {resolveHook = r, rejectHook = rj});
 
-
         setTimeout(() => {rejectHook()}, TIMEOUT);
 
         await this.api.tx.dex.swapWithExactSupply(
@@ -212,27 +211,6 @@ class KaruraClient {
             total: free + frozen + reserved
         }
     }    
-
-
-    /**
-     * Transfers a token from the class address to a recipient Karura account address
-     * 
-     * @param {string}      recipient   transfer receiver address 
-     * @param {string}      token   id of token to transfer - Examples "KSM", "KAR" 
-     * @param {string}      amount  amount of tokens to transfer 
-     */
-    async transfer(recipient: string, token: string, amount: string) {
-        const api = new ApiPromise(options({ provider: this.provider }));
-        await api.isReadyOrError;
-
-        this.accountData(token).then((data) => this.logger.log("Before transfer account data", data));
-
-        const hash = await api.tx.currencies
-            .transfer(recipient, { Token: token,}, amount)
-            .signAndSend(this.address);
-
-        this.logger.log("Transfer sent with hash", hash.toHex());
-    }
 
     toNumber(amount: string, unit: string = "Plank" ){
         return +amount.replace(/,/g, '') * 1e-12;
