@@ -2,12 +2,11 @@
 
 <br>
 
-<img src="https://tradingplatforms.com/wp-content/uploads/2021/05/Kraken-Logo.png" width="40%"
-        alt="Kraken.com Logo"/>
+<p float="left">
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/kraken.png" width="40%" alt="Kraken.com Logo"/>
 
-<br>
-
-<img src="https://blockzeit.com/wp-content/uploads/2021/06/Screen-Shot-2021-06-25-at-4.20.03-PM.png" width="40%" alt="Karura Logo"> 
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/karura.png" width="40%" alt="Karura Logo"/> 
+</p>
 
 <br>
 <br>
