@@ -8,19 +8,19 @@
         "preserveConstEnums": true,
         "sourceMap": true,
         "skipLibCheck": true,
-        "strict": false,
-        "noImplicitAny": false,
+        "strict": true,
+        "noImplicitAny": true,
         "outDir": "./build",
         "allowJs": true,
     },
     "compileOnSave": true,
     "include": ["graphql_server/server.ts", "connectors/karura/subquery.ts", 
-        "connectors/karura/karura-client.ts", "src/**/*", "lib/get-credentials.ts"],
+        "connectors/karura/karura-client.ts", "src/**/*", "src/lib/get-credentials.ts"],
     "exclude": ["node_modules", "src/generated/*.ts", "src/graphql/*.ts"],
     "files": [
         "graphql_server/server.ts",
         "connectors/karura/subquery.ts",
         "connectors/karura/karura-client.ts",
-        "lib/get-credentials.ts"
+        "src/lib/get-credentials.ts"
     ]
 }
