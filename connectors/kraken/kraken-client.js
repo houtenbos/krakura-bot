@@ -118,7 +118,10 @@ class KrakenClient extends Client{
 
         try{
             const response = await this.client.api('AddOrder', param, _.noop);
-            return await this.checkOrder(response.result.txid[0]);
+            if( orderType == 'market' )
+                return await this.checkMarketOrder(response.result.txid[0]);
+            else
+                return await this.checkOrder(response.result.txid[0]);
         }
         catch(error){
             return await this.handleErrors(error, this.createOrder, payload);
@@ -161,6 +164,19 @@ class KrakenClient extends Client{
         catch(error){
             return this.handleErrors(error, this.checkOrder, payload);
         }
+    }
+    /**
+     * Checks the status of an open market order. Retries if the order is still open.
+     * @param {String}        		orderId       Order id of order to be cancelled
+     * @return {Promise<Object>}                  Order object w/ {orderId, status, currencyPair, ...}
+     */
+    async checkMarketOrder(orderId){
+        const order = await this.checkOrder(orderId);
+        if( order.status == 'open' ){
+            await new Promise(r => setTimeout(r, 1000));
+            return this.checkMarketOrder(orderId);
+        }
+        return order;
     }
     /**
      * Gets the account balance on Kraken and calculates the free and placed balance 

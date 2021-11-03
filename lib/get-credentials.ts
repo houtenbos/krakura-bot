@@ -3,7 +3,7 @@ import * as encryptpwd from 'encrypt-with-password';
 import * as fs from 'fs';
 
 type platform = "karura" | "kraken";
-type credentials = { key: string; secret: string; } | { address: string; phrase: string};
+type credentials = { key: string; secret: string; } | { phrase: string};
 type credentialsDocument = {[key: string]: credentials }
 
 let password: string;
@@ -57,8 +57,8 @@ async function setKrakenApiCredentials(): Promise<{ key: string; secret: string;
 	return {key, secret};
 }
 
-async function setKaruraCredentials(): Promise<{ address: string; phrase: string }>{
-	const response: {address: string, phrase: string} = await prompts([
+async function setKaruraCredentials(): Promise<{ phrase: string }>{
+	const response: {phrase: string} = await prompts([
 	{
 		type: 'password',
 		name: 'phrase',
@@ -67,9 +67,9 @@ async function setKaruraCredentials(): Promise<{ address: string; phrase: string
 	}
 	]);
 	
-	const {address, phrase} = response;
-	saveApiCredentials({ address, phrase }, 'karura');
-	return {address, phrase};
+	const {phrase} = response;
+	saveApiCredentials({phrase }, 'karura');
+	return {phrase};
 }
 
 

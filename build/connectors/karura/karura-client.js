@@ -15,29 +15,52 @@ const wasm_crypto_1 = require("@polkadot/wasm-crypto");
 const sdk_wallet_1 = require("@acala-network/sdk-wallet");
 const sdk_swap_1 = require("@acala-network/sdk-swap");
 const sdk_core_1 = require("@acala-network/sdk-core");
-const TIMEOUT = 30 * 1000;
+const TIMEOUT = 60 * 1000;
 const availableCurrencies = ["KAR", "KUSD", "BNC", "LKSM", "KSM"];
+const RPC_ENDPOINT = "wss://karura.api.onfinality.io/public-ws";
 /**
  * KaruraClient connects to the Polkadot.js API
  */
 class KaruraClient {
-    constructor(address, phrase, currencies, logger = console) {
-        this.address = address;
+    constructor(phrase, currencies, logger = console) {
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
         this.logger = logger;
-        this.provider = new api_2.WsProvider("wss://karura-rpc-0.aca-api.network");
-        this.api = new api_2.ApiPromise((0, api_1.options)({ provider: this.provider }));
-        this.api.isReadyOrError.then(() => {
-            this.wallet = new sdk_wallet_1.WalletPromise(this.api);
-            this.swap = new sdk_swap_1.SwapPromise(this.api);
+        const connected = this.connect().then(({ api, wallet, swap }) => {
+            this.api = api;
+            this.wallet = wallet;
+            this.swap = swap;
         });
         this.keyring = new api_2.Keyring({ type: 'sr25519' });
         (0, wasm_crypto_1.waitReady)().then(() => {
             this.key = this.keyring.addFromMnemonic(phrase);
             this.address = this.keyring.getPairs()[0].address;
         });
-        this.isReady = Promise.all([this.api.isReadyOrError, (0, wasm_crypto_1.waitReady)()]);
+        this.isReady = Promise.all([connected, (0, wasm_crypto_1.waitReady)()]);
         this.config = { fees: { maker: 0.3 / 100, taker: 0.3 / 100 } };
+    }
+    connect() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const provider = new api_2.WsProvider(RPC_ENDPOINT);
+            let api;
+            try {
+                api = yield api_2.ApiPromise.create((0, api_1.options)({ provider }));
+            }
+            catch (error) {
+                this.logger.error(`Error while trying to connect: ${error}, retry in 1 second.`);
+                yield new Promise(r => setTimeout(r, 1000));
+                // retry
+                return yield this.connect();
+            }
+            const [chain, nodeName, nodeVersion] = yield Promise.all([
+                api.rpc.system.chain(),
+                api.rpc.system.name(),
+                api.rpc.system.version()
+            ]);
+            this.logger.info(`You are connected to chain ${chain} using ${nodeName} v${nodeVersion}`);
+            const wallet = new sdk_wallet_1.WalletPromise(api);
+            const swap = new sdk_swap_1.SwapPromise(api);
+            return { api, wallet, swap };
+        });
     }
     getPrice(currencyPair, direction, volume, volumeCurrency = 'base') {
         return __awaiter(this, void 0, void 0, function* () {
@@ -93,36 +116,34 @@ class KaruraClient {
                 this.logger.error(`Could not get trade parameters, check connection.`);
                 return { costs: 0, volumeExecuted: 0, fees: {}, timeClosed: undefined };
             }
-            const beforeSupplyBalance = yield this.wallet.queryBalance(this.key.address, supplyToken);
-            const beforeTargetBalance = yield this.wallet.queryBalance(this.key.address, targetToken);
             // Exec Exchange
             let resolveHook, rejectHook;
             const p = new Promise((r, rj) => { resolveHook = r, rejectHook = rj; });
-            setTimeout(() => { rejectHook(); }, TIMEOUT);
-            yield this.api.tx.dex.swapWithExactSupply(path.map((item) => item.toChainData()), supplyAmount.toChainData(), parameters.output.balance.mul(slippage).toChainData()).signAndSend(this.key, (result) => __awaiter(this, void 0, void 0, function* () {
-                if (result.isInBlock) {
-                    // calculate trade costs
-                    const afterSupplyBalance = yield this.wallet.queryBalance(this.key.address, supplyToken);
-                    const afterTargetBalance = yield this.wallet.queryBalance(this.key.address, targetToken);
-                    const deltaSupply = afterSupplyBalance.freeBalance.sub(beforeSupplyBalance.freeBalance).toNumber();
-                    const deltaTarget = afterTargetBalance.freeBalance.sub(beforeTargetBalance.freeBalance).toNumber();
+            setTimeout(() => { rejectHook('Connection timed out.'); }, TIMEOUT);
+            yield this.api.tx.dex.swapWithExactSupply(path.map((item) => item.toChainData()), supplyAmount.toChainData(), parameters.output.balance.mul(slippage).toChainData()).signAndSend(this.key, ({ events = [], status }) => __awaiter(this, void 0, void 0, function* () {
+                this.logger.info(`Swap status: ${status.type}`);
+                if (status.isInBlock) {
+                    // log event information
+                    this.logger.debug('Events:');
+                    events.forEach(({ event: { data, method, section }, phase }) => {
+                        this.logger.debug('\t', phase.toString(), `: ${section}.${method}`, data.toString());
+                    });
+                    // get trade costs from event data
+                    const swap = this.getSwapData(events);
+                    // create result object
                     const result = {
-                        costs: 0,
-                        volumeExecuted: 0,
-                        fees: { 'KAR': 0.0022, [supplyToken.toString()]: supplyAmount.toNumber() * this.config.fees.taker },
-                        timeClosed: new Date()
+                        costs: swap[quote],
+                        volumeExecuted: swap[base],
+                        fees: { 'KAR': swap.fee, [supplyToken.toString()]: supplyAmount.toNumber() * this.config.fees.taker },
+                        timeClosed: new Date(),
+                        error: undefined
                     };
-                    if (direction == 'sell') {
-                        result.costs = deltaTarget;
-                        result.volumeExecuted = deltaSupply * -1;
-                    }
-                    else {
-                        result.costs = deltaSupply * -1;
-                        result.volumeExecuted = deltaTarget;
-                    }
                     resolveHook(result);
                 }
-            }));
+            })).catch((error) => {
+                this.logger.error(error);
+                resolveHook({ costs: 0, volumeExecuted: 0, fees: [{ 'KAR': 0.0022 }], timeClosed: new Date(), error });
+            });
             return p;
         });
     }
@@ -142,8 +163,26 @@ class KaruraClient {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.isReady;
             try {
-                const balance = yield this.api.query.tokens.accounts(this.address, { Token: token });
-                return this.parseBalance(balance.toHuman());
+                let balance = { free: '0', frozen: '0', reserved: '0' };
+                // api.query.tokens does not return KAR balance.
+                if (token == 'KAR') {
+                    const response = yield this.api.query.system.account(this.address);
+                    if (response) {
+                        const responseObj = response.toHuman();
+                        balance = {
+                            free: responseObj.data.free,
+                            frozen: responseObj.data.feeFrozen,
+                            reserved: responseObj.data.reserved,
+                        };
+                    }
+                }
+                else {
+                    const response = yield this.api.query.tokens.accounts(this.address, { Token: token });
+                    if (response) {
+                        balance = response.toHuman();
+                    }
+                }
+                return this.parseBalance(balance);
             }
             catch (error) {
                 this.logger.error(`Could not get ${token} balance`);
@@ -204,6 +243,17 @@ class KaruraClient {
     }
     toNumber(amount, unit = "Plank") {
         return +amount.replace(/,/g, '') * 1e-12;
+    }
+    getSwapData(events) {
+        const swap = events.filter(e => { var _a; return ((_a = e.get('event')) === null || _a === void 0 ? void 0 : _a.method) == 'Swap'; }).pop();
+        const swapParsed = JSON.parse(swap.event.toString());
+        const fee = events.filter(e => { var _a; return ((_a = e.get('event')) === null || _a === void 0 ? void 0 : _a.method) == 'Deposit'; }).pop();
+        const feeParsed = JSON.parse(fee.event.toString());
+        return {
+            [swapParsed.data[1][0].token]: swapParsed.data[2][0] * 1e-12,
+            [swapParsed.data[1][1].token]: swapParsed.data[2][1] * 1e-12,
+            fee: feeParsed.data[0] * 1e-12,
+        };
     }
 }
 module.exports = KaruraClient;

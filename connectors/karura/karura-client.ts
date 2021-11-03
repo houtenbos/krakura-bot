@@ -8,8 +8,9 @@ import { SwapPromise } from "@acala-network/sdk-swap";
 import { FixedPointNumber, Token } from "@acala-network/sdk-core";
 import { KeyringPair } from "@polkadot/keyring/types";
 
-const TIMEOUT = 30*1000;
+const TIMEOUT = 60*1000;
 
+type balance = {free: string; frozen: string; reserved: string};
 interface KaruraClient {
     address: string
     currencies: string[]
@@ -24,29 +25,57 @@ interface KaruraClient {
     config: {fees: {maker: number; taker: number}}
 }
 const availableCurrencies = ["KAR", "KUSD", "BNC", "LKSM", "KSM"];
+const RPC_ENDPOINT = "wss://karura.api.onfinality.io/public-ws";
 
 /**
  * KaruraClient connects to the Polkadot.js API 
  */
 class KaruraClient {
-    constructor(address: string, phrase: string, currencies: string[], logger: Console = console) {
+    constructor(phrase: string, currencies: string[], logger: Console = console) {
 
-        this.address = address;
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
         this.logger = logger;
-        this.provider = new WsProvider("wss://karura-rpc-0.aca-api.network");
-        this.api = new ApiPromise(options({ provider: this.provider }));
-        this.api.isReadyOrError.then(() => {
-            this.wallet = new WalletPromise(this.api);
-            this.swap = new SwapPromise(this.api);
+
+        const connected = this.connect().then( ({api, wallet, swap}) => {
+            this.api = api;
+            this.wallet = wallet;
+            this.swap = swap;
         })
+
         this.keyring = new Keyring({ type: 'sr25519' });
         waitReady().then(() => {
             this.key = this.keyring.addFromMnemonic(phrase);
             this.address = this.keyring.getPairs()[0].address;
         });
-        this.isReady = Promise.all([this.api.isReadyOrError, waitReady()]);
+        this.isReady = Promise.all([connected , waitReady()]);
         this.config = {fees: {maker: 0.3/100, taker: 0.3/100}};
+    }
+
+    async connect(): Promise<{api: ApiPromise; wallet: WalletPromise; swap: SwapPromise}>{
+        const provider = new WsProvider(RPC_ENDPOINT);
+
+        let api; 
+        try{
+            api = await ApiPromise.create(options({ provider }));
+        }catch(error){
+            this.logger.error(`Error while trying to connect: ${error}, retry in 1 second.`);
+            await new Promise(r => setTimeout(r, 1000));
+            // retry
+            return await this.connect();
+        }
+            
+        const [chain, nodeName, nodeVersion] = await Promise.all([
+            api.rpc.system.chain(),
+            api.rpc.system.name(),
+            api.rpc.system.version()
+        ]);
+        
+        this.logger.info(`You are connected to chain ${chain} using ${nodeName} v${nodeVersion}`);
+        
+        const wallet = new WalletPromise(api);
+        const swap = new SwapPromise(api);
+        
+        return {api, wallet, swap};
     }
 
     async getPrice(currencyPair: string, direction: "buy"|"sell", volume: number, volumeCurrency = 'base'){
@@ -110,49 +139,45 @@ class KaruraClient {
             return {costs: 0, volumeExecuted: 0, fees: {}, timeClosed: undefined};
         }
 
-        const beforeSupplyBalance = await this.wallet.queryBalance(this.key.address, supplyToken);
-        const beforeTargetBalance = await this.wallet.queryBalance(this.key.address, targetToken);
-
         // Exec Exchange
         let resolveHook: Function, rejectHook: Function;
         const p = new Promise((r, rj) => {resolveHook = r, rejectHook = rj});
-
-
-        setTimeout(() => {rejectHook()}, TIMEOUT);
+        setTimeout(() => {rejectHook('Connection timed out.')}, TIMEOUT);
 
         await this.api.tx.dex.swapWithExactSupply(
                                 path.map((item) => item.toChainData()),
                                 supplyAmount.toChainData(),
                                 parameters.output.balance.mul(slippage).toChainData()
-                                ).signAndSend(this.key, async (result) => {
-                                    if (result.isInBlock) {
-                                        // calculate trade costs
-                                        const afterSupplyBalance = await this.wallet.queryBalance(this.key.address, supplyToken);
-                                        const afterTargetBalance = await this.wallet.queryBalance(this.key.address, targetToken);
-                              
-                                        const deltaSupply = afterSupplyBalance.freeBalance.sub(beforeSupplyBalance.freeBalance).toNumber();
-                                        const deltaTarget = afterTargetBalance.freeBalance.sub(beforeTargetBalance.freeBalance).toNumber();
+                                ).signAndSend(this.key, async ({events = [], status}) => {
+                                    this.logger.info(`Swap status: ${status.type}`);
+
+                                    if (status.isInBlock || status.isFinalized ) {
+                                        // log event information
+                                        this.logger.debug('Events:');
+                                        events.forEach(({ event: { data, method, section }, phase }) => {
+                                            this.logger.debug('\t', phase.toString(), `: ${section}.${method}`, data.toString());
+                                        });
+
+                                        // get trade costs from event data
+                                        const swap = this.getSwapData(events);
+
+                                        // create result object
                                         const result = {
-                                            costs: 0,
-                                            volumeExecuted: 0,
-                                            fees: {'KAR': 0.0022, [supplyToken.toString()]: supplyAmount.toNumber()*this.config.fees.taker},
-                                            timeClosed: new Date()
+                                            costs: swap[quote],
+                                            volumeExecuted: swap[base],
+                                            fees: {'KAR': swap.fee, [supplyToken.toString()]: supplyAmount.toNumber()*this.config.fees.taker},
+                                            timeClosed: new Date(),
+                                            error: undefined as any
                                         };
-                                        if( direction == 'sell' ){
-                                            result.costs = deltaTarget;
-                                            result.volumeExecuted = deltaSupply*-1;
-                                        }
-                                        else{
-                                            result.costs = deltaSupply*-1;
-                                            result.volumeExecuted = deltaTarget;
-                                        }
                                         resolveHook(result);
                                     }
+                                }).catch( (error) => {
+                                    this.logger.error(error);
+                                    resolveHook({ costs:0, volumeExecuted: 0, fees:[{'KAR':0.0022}], timeClosed: new Date(), error });
                                 });
-
         return p;
     }
-        
+
     async getBalance(){
         const balance: {[key: string]: {free: number; placed: number; total: number}} = {};
         for( let currency of this.currencies ){
@@ -168,9 +193,28 @@ class KaruraClient {
         await this.isReady;
 
         try{
-            const balance = await this.api.query.tokens.accounts(this.address, {Token: token }) as Codec;
-            return this.parseBalance(balance.toHuman())
-        }
+            let balance = {free: '0', frozen: '0', reserved: '0'};
+       
+            // api.query.tokens does not return KAR balance.
+            if( token=='KAR'){
+                const response = await this.api.query.system.account(this.address) as Codec;
+                if( response ){
+                    const responseObj = response.toHuman() as {data: {free: string; feeFrozen: string; miscFrozen: string; reserved: string}};
+                    balance = {
+                        free: responseObj.data.free,
+                        frozen: responseObj.data.feeFrozen,
+                        reserved: responseObj.data.reserved,
+                    }
+                }
+            }
+            else{
+                const response = await this.api.query.tokens.accounts(this.address, {Token: token }) as Codec;
+                if( response ){
+                    balance = response.toHuman() as balance;
+                }
+            }
+            return this.parseBalance(balance);
+       }
         catch(error){
             this.logger.error(`Could not get ${token} balance`);
             return {free: 0, placed: 0, total: 0};
@@ -202,7 +246,7 @@ class KaruraClient {
         return this.wallet.getToken(token);
     }
 
-    parseBalance(balance: any) {
+    parseBalance(balance: balance) {
         const free = this.toNumber(balance.free);
         const frozen = this.toNumber(balance.frozen);
         const reserved = this.toNumber(balance.reserved);
@@ -236,7 +280,20 @@ class KaruraClient {
 
     toNumber(amount: string, unit: string = "Plank" ){
         return +amount.replace(/,/g, '') * 1e-12;
+    }
 
+    getSwapData(events: any[]){ // find event record type
+        const swap = events.filter(e => e.get('event')?.method == 'Swap' ).pop();
+        const swapParsed = JSON.parse(swap.event.toString()) as {index: string; data: [string, Array<{token: string}>, Array<number>]};
+
+        const fee = events.filter(e => e.get('event')?.method == 'Deposit').pop();
+        const feeParsed = JSON.parse(fee.event.toString()) as {index: string; data: Array<number>};
+
+        return {
+            [swapParsed.data[1][0].token]: swapParsed.data[2][0] * 1e-12,
+            [swapParsed.data[1][1].token]: swapParsed.data[2][1] * 1e-12,
+            fee: feeParsed.data[0] * 1e-12,
+        }
     }
 }
 
