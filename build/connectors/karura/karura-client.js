@@ -122,7 +122,7 @@ class KaruraClient {
             setTimeout(() => { rejectHook('Connection timed out.'); }, TIMEOUT);
             yield this.api.tx.dex.swapWithExactSupply(path.map((item) => item.toChainData()), supplyAmount.toChainData(), parameters.output.balance.mul(slippage).toChainData()).signAndSend(this.key, ({ events = [], status }) => __awaiter(this, void 0, void 0, function* () {
                 this.logger.info(`Swap status: ${status.type}`);
-                if (status.isInBlock) {
+                if (status.isInBlock || status.isFinalized) {
                     // log event information
                     this.logger.debug('Events:');
                     events.forEach(({ event: { data, method, section }, phase }) => {
