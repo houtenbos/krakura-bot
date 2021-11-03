@@ -9,9 +9,9 @@ const clients = new Map();
 (async () => {
 	await askPassword();
 	const {key, secret} = await getOrSetApi('kraken');
-	const {address, phrase} = await getOrSetApi('karura');
+	const {phrase} = await getOrSetApi('karura');
 	const krakenClient = new KrakenClient(key, secret);
-	const karuraClient = new KaruraClient(address, phrase, config.currencies);
+	const karuraClient = new KaruraClient(phrase, config.currencies);
 	await krakenClient.isReady;
 	await karuraClient.isReady;
 
@@ -62,8 +62,10 @@ const clients = new Map();
 		
 				console.log('Profitable trade detected');
 				// make trade
-				const buyOrder = await clients.get(buyPlatform).createOrder(currencyPair, 'market', 'buy', tradeVolume);
-				const sellOrder = await clients.get(sellPlatform).createOrder(currencyPair, 'swap', 'sell', tradeVolume);
+				const buyOrderType = buyPlatform == 'kraken' ? 'market' : 'swap';
+				const sellOrderType = sellPlatform == 'kraken' ? 'market' : 'swap';
+				const buyOrder = await clients.get(buyPlatform).createOrder(currencyPair, buyOrderType, 'buy', tradeVolume, buyPrice);
+				const sellOrder = await clients.get(sellPlatform).createOrder(currencyPair, sellOrderType, 'sell', tradeVolume, sellPrice);
 		
 				// calculate profit and loss
 				const profitQuote = sellOrder.costs - (sellOrder.fees[quote] || 0) - buyOrder.costs - (buyOrder.fees[quote] || 0);

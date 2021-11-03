@@ -75,9 +75,9 @@ function setKaruraCredentials() {
                 validate: (phrase) => !(typeof (phrase) == 'string' && phrase.length > 8) ? `Please enter valid phrase` : true
             }
         ]);
-        const { address, phrase } = response;
-        saveApiCredentials({ address, phrase }, 'karura');
-        return { address, phrase };
+        const { phrase } = response;
+        saveApiCredentials({ phrase }, 'karura');
+        return { phrase };
     });
 }
 function saveApiCredentials(credentials, platform) {
