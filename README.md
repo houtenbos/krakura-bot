@@ -32,7 +32,7 @@ git clone https://github.com/houtenbos/krakura-bot.git
 
 The trading configuration of the arbitrage bot can be found at `src/config/trading-config.js`. This file defines the max trading size of supported currency pairs and the minimal profit margin you are willing to take when executing trades. Adjust this file to your liking and level. 
 
-```js
+```javascript
 module.exports = {
 currencies: ['KSM', 'KAR', 'USD', 'KUSD'],
 currencyPairs: ['KSM/USD'],
