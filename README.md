@@ -17,6 +17,9 @@ Is an Arbitrage bot between Kraken and Karura. This project was created through 
 
 The arbitrage bot constantly checks for pricing differences between the two platforms and executes trades when they are profitable as defined in the `trading-config.js` file. 
 
+## Supported Currency Pairs
+* KSM/KUSD
+  
 ## Setup
 
 Make sure you have the projects source code.
@@ -27,7 +30,7 @@ git clone https://github.com/houtenbos/krakura-bot.git
 
 ### Define your Trading Configuration
 
-The trading configuration of the arbitrage bot can be found at `src/config/trading-config.js`. This file defines the max trading size of supported currency pairs and the minimal profit margin your willing to take when executing a trade. Adjust this file to your liking and level. 
+The trading configuration of the arbitrage bot can be found at `src/config/trading-config.js`. This file defines the max trading size of supported currency pairs and the minimal profit margin you are willing to take when executing trades. Adjust this file to your liking and level. 
 
 ```js
 module.exports = {
@@ -51,7 +54,7 @@ crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
 
 ## Bot Startup
 
-When the arbitrage bot is first started, you will be asked a series of questions to obtain platform credentials. Once all questions have been answered, your credentials will be encrypted and store locally on your machine in the project at `src/config/credentials`. Every time after this when the bot is started, you will only be required to enter your password for the bot to access your platform credentials. If you would like to reset your stored platform credentials, simply delete the credentials file at `src/config/credentials` and restart the bot with `yarn start`.
+When the arbitrage bot starts for the first time, you will be presented with a series of questions to obtain platform credentials. Once all startup questions are answered, your credentials will be encrypted and stored locally on your machine in the project at `src/config/credentials`. Now, when the arbitrage bot starts, you will only be required to enter your password for the arbitrage bot to access your platform credentials. If you need to reset your stored platform credentials, delete the credentials file at `src/config/credentials` and restart the arbitrage bot with `yarn start`. Once all startup questions are answered, then the arbitrage bot will start looking for profitable trades.
 
 ### Bot Questions
 
