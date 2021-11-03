@@ -1,4 +1,3 @@
-//@ts-check
 const Client = require("../../connectors/client");
 
 class Balance{
@@ -20,7 +19,7 @@ class Balance{
      * @return {Number} the balance on the exchange.
 	 */
 	getBalance(platform, currency){
-		return this.platformBalances.get(platform).getBalance(currency);
+		return this.platformBalances.get(platform)?.getBalance(currency) || 0;
 	}
 	/**
 	 * @param {String} platform
@@ -29,7 +28,7 @@ class Balance{
      * @return {Void}
 	 */
 	setBalance(platform, currency, amount){
-		this.platformBalances.get(platform).setBalance(currency, amount);
+		this.platformBalances.get(platform)?.setBalance(currency, amount);
 	}
 }
 
@@ -46,7 +45,7 @@ class BalanceObject{
 		for( const currency of currencies ){
 			this.setBalance(currency, 0);
 		}
-		this._isReadyHook = (x) => {};
+		this._isReadyHook = (/** @type {any} */ x) => {};
 		this.isReady = new Promise(r => this._isReadyHook = r);
 		this.client = client;
 		this.build();

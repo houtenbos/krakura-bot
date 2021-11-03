@@ -45,7 +45,7 @@ class Client{
 	 */
 	async loadCurrencyPairConfig(){
 		// get minimum order size, decimals points, fees etc.
-		return;
+		return {};
 	}
 }
 
