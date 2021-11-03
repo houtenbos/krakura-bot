@@ -113,3 +113,10 @@ test.js
 
 # TypeScript debug mappings
 *.js.map
+
+# Apple files
+.DS_Store
+
+# Lock files
+package-lock.json
+yarn.lock

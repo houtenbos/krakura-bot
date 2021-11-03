@@ -1,5 +1,5 @@
 //@ts-check
-const Client = require("../connectors/client");
+const Client = require("../../connectors/client");
 
 class Balance{
 	/** @type {Map<String, BalanceObject>} */
