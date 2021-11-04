@@ -28,7 +28,7 @@ const availableCurrencies = ["KAR", "KUSD", "BNC", "LKSM", "KSM"];
 const RPC_ENDPOINT = "wss://karura.api.onfinality.io/public-ws";
 
 /**
- * KaruraClient connects to the Polkadot.js API 
+ * KaruraClient connects to the Polkadot.js API
  */
 class KaruraClient {
     constructor(phrase: string, currencies: string[], logger: Console = console) {
@@ -74,7 +74,7 @@ class KaruraClient {
         
         const wallet = new WalletPromise(api);
         const swap = new SwapPromise(api);
-        
+
         return {api, wallet, swap};
     }
 
@@ -95,14 +95,23 @@ class KaruraClient {
             supplyCurrency = base;
             targetCurrency = quote;
         }
-        const exchangeFee = this.api.consts.dex.getExchangeFee;
+        const supplyToken = this.getToken(supplyCurrency);
+        const targetToken = this.getToken(targetCurrency);
 
-        const path: [Token, Token] = [this.getToken(base), this.getToken(quote)];
+        // construct swap path and determine swap direction.
+        const path: [Token, Token] = [supplyToken, targetToken];
         const supplyAmount = new FixedPointNumber(volume, 12);
-    
-        const parameters = await this.swap.swap(path, supplyAmount, "EXACT_INPUT");
-        if( parameters )
-            return parameters.output.balance.toNumber() / volume;
+        const swapTradeMode = direction == 'sell' ? "EXACT_INPUT" : "EXACT_OUTPUT";
+
+        const parameters = await this.swap.swap(path, supplyAmount, swapTradeMode);
+        if( parameters ){
+            if( direction == 'buy' ){
+                return parameters.input.balance.div(parameters.output.balance).toNumber();
+            }
+            else{
+                return parameters.output.balance.div(parameters.input.balance).toNumber();
+            }
+        }
         else
             return 0;
     }
@@ -273,6 +282,16 @@ class KaruraClient {
             [swapParsed.data[1][1].token]: swapParsed.data[2][1] * 1e-12,
             fee: feeParsed.data[0] * 1e-12,
         }
+    }
+
+    async isCurrencyPairAvailable(currencyPair: string){
+        const [base, quote] = currencyPair.split('/');
+        // generate the path, KAR => KSM => USD not yet supported
+        const status = await this.api.query.dex.tradingPairStatuses([
+            { TOKEN: quote },
+            { TOKEN: base }
+        ]);
+        return status.toString() == 'Enabled';
     }
 }
 

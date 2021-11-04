@@ -78,12 +78,21 @@ class KaruraClient {
                 supplyCurrency = base;
                 targetCurrency = quote;
             }
-            const exchangeFee = this.api.consts.dex.getExchangeFee;
-            const path = [this.getToken(base), this.getToken(quote)];
+            const supplyToken = this.getToken(supplyCurrency);
+            const targetToken = this.getToken(targetCurrency);
+            // construct swap path and determine swap direction.
+            const path = [supplyToken, targetToken];
             const supplyAmount = new sdk_core_1.FixedPointNumber(volume, 12);
-            const parameters = yield this.swap.swap(path, supplyAmount, "EXACT_INPUT");
-            if (parameters)
-                return parameters.output.balance.toNumber() / volume;
+            const swapTradeMode = direction == 'sell' ? "EXACT_INPUT" : "EXACT_OUTPUT";
+            const parameters = yield this.swap.swap(path, supplyAmount, swapTradeMode);
+            if (parameters) {
+                if (direction == 'buy') {
+                    return parameters.input.balance.div(parameters.output.balance).toNumber();
+                }
+                else {
+                    return parameters.output.balance.div(parameters.input.balance).toNumber();
+                }
+            }
             else
                 return 0;
         });
@@ -236,6 +245,17 @@ class KaruraClient {
             [swapParsed.data[1][1].token]: swapParsed.data[2][1] * 1e-12,
             fee: feeParsed.data[0] * 1e-12,
         };
+    }
+    isCurrencyPairAvailable(currencyPair) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const [base, quote] = currencyPair.split('/');
+            // generate the path, KAR => KSM => USD not yet supported
+            const status = yield this.api.query.dex.tradingPairStatuses([
+                { TOKEN: quote },
+                { TOKEN: base }
+            ]);
+            return status.toString() == 'Enabled';
+        });
     }
 }
 module.exports = KaruraClient;
