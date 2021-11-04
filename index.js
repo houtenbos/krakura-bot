@@ -12,7 +12,9 @@ const clients = new Map();
 	const {phrase} = await getOrSetApi('karura');
 	const krakenClient = new KrakenClient(key, secret);
 	const karuraClient = new KaruraClient(phrase, config.currencies);
+	console.log('Waiting for kraken client to be ready.');
 	await krakenClient.isReady;
+	console.log('Waiting for karura client to be ready.');
 	await karuraClient.isReady;
 
 	clients.set('kraken', krakenClient);
