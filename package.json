@@ -23,7 +23,9 @@
     "karura"
   ],
   "author": "Lester Houtenbos",
-  "contributors": ["Matthew Ashley"],
+  "contributors": [
+    "Matthew Ashley"
+  ],
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/houtenbos/krakura-bot/issues"
@@ -36,6 +38,7 @@
     "@acala-network/sdk-wallet": "^3.0.2",
     "@polkadot/api": "^6.5.2",
     "@polkadot/keyring": "^7.6.1",
+    "bunyan": "^1.8.15",
     "encrypt-with-password": "^1.0.0",
     "graphql": "^15.6.1",
     "graphql-request": "^3.6.1",

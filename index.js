@@ -1,20 +1,31 @@
 const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./src/lib/balance");
+const bunyan = require('bunyan');
 const { askPassword, getOrSetApi } = require("./build/src/lib/get-credentials");
 const config = require("./src/config/trading-config");
 
 const clients = new Map();
 
+const log = bunyan.createLogger({
+    name: 'krakura',
+    streams: [{
+        type: 'rotating-file',
+        path: './logs/krakura.log',
+        period: '1d',   
+        count: 5
+    }]
+});
+
 (async () => {
 	await askPassword();
 	const {key, secret} = await getOrSetApi('kraken');
 	const {phrase} = await getOrSetApi('karura');
-	const krakenClient = new KrakenClient(key, secret);
-	const karuraClient = new KaruraClient(phrase, config.currencies);
-	console.log('Waiting for kraken client to be ready.');
+	const krakenClient = new KrakenClient(key=key, secret=secret, logger=log);
+	const karuraClient = new KaruraClient(phrase=phrase, currencies=config.currencies, logger=log);
+	log.info('Waiting for kraken client to be ready.');
 	await krakenClient.isReady;
-	console.log('Waiting for karura client to be ready.');
+	log.info('Waiting for karura client to be ready.');
 	await karuraClient.isReady;
 
 	clients.set('kraken', krakenClient);
@@ -39,7 +50,7 @@ const clients = new Map();
 		
 				// check for krakens minimum order volumes
 				if( tradeVolume < krakenClient.config.minOrderVolume[currencyPair] ){
-					console.log(`Order too small to place on kraken. Order size: ${tradeVolume}, min order size: ${krakenClient.config.minOrderVolume[currencyPair]}`);
+					log.info(`Order too small to place on kraken. Order size: ${tradeVolume}, min order size: ${krakenClient.config.minOrderVolume[currencyPair]}`);
 					continue;
 				}
 				
@@ -56,13 +67,12 @@ const clients = new Map();
 				const PnL = sellCostsNett - buyCostsNett;
 				const profitMargin = PnL / buyCostsNett;
 
-				console.log(`Buy ${tradeVolume} ${base} @ ${buyPlatform} for ${buyPrice.toFixed(2)}, sell @ ${sellPlatform} for ${sellPrice.toFixed(2)}  - margin: ${profitMargin.toFixed(4)*100} %`);
+				log.info(`Buy ${tradeVolume} ${base} @ ${buyPlatform} for ${buyPrice.toFixed(2)}, sell @ ${sellPlatform} for ${sellPrice.toFixed(2)}  - margin: ${profitMargin.toFixed(4)*100} %`);
 				if( profitMargin < config.minProfitMargin ){
 					continue;
 				}
 				
-		
-				console.log('Profitable trade detected');
+				log.info('Profitable trade detected');
 				// make trade
 				const buyOrderType = buyPlatform == 'kraken' ? 'market' : 'swap';
 				const sellOrderType = sellPlatform == 'kraken' ? 'market' : 'swap';
@@ -73,8 +83,7 @@ const clients = new Map();
 				const profitQuote = sellOrder.costs - (sellOrder.fees[quote] || 0) - buyOrder.costs - (buyOrder.fees[quote] || 0);
 				const profitBase = buyOrder.volumeExecuted - (buyOrder.fees[base] || 0) - sellOrder.volumeExecuted - (sellOrder.fees[base] || 0);
 
-				console.log(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(5)} ${base}.`);
-
+				log.info(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(5)} ${base}.`);
 
 				// refresh balance by getting the balances from the platforms
 				balance = new Balance([...clients.entries()], config.currencies);
