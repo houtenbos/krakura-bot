@@ -88,14 +88,14 @@ function saveApiCredentials(credentials, platform) {
             credentialsDocument = {};
         credentialsDocument[platform] = credentials;
         // save them
-        const path = `./config/credentials`;
+        const path = `./src/config/credentials`;
         const encrypted = encryptpwd.encryptJSON(credentialsDocument, password);
         fs.writeFileSync(path, encrypted);
     });
 }
 function getApiCredentials() {
     return __awaiter(this, void 0, void 0, function* () {
-        const path = `./config/credentials`;
+        const path = `./src/config/credentials`;
         if (!fs.existsSync(path))
             return;
         const encryptedCredentials = fs.readFileSync(path).toString();

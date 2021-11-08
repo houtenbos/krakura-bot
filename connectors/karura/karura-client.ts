@@ -14,7 +14,7 @@ type balance = {free: string; frozen: string; reserved: string};
 interface KaruraClient {
     address: string
     currencies: string[]
-    logger: Console
+    logger: any
     provider: WsProvider
     api: ApiPromise
     isReady: Promise<any>
@@ -31,7 +31,7 @@ const RPC_ENDPOINT = "wss://karura.api.onfinality.io/public-ws";
  * KaruraClient connects to the Polkadot.js API
  */
 class KaruraClient {
-    constructor(phrase: string, currencies: string[], logger: Console = console) {
+    constructor(phrase: string, currencies: string[], logger: any = console) {
 
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
         this.logger = logger;
