@@ -1,28 +1,18 @@
 const KrakenClient = require("./connectors/kraken/kraken-client");
 const KaruraClient = require("./build/connectors/karura/karura-client");
 const Balance = require("./src/lib/balance");
-const bunyan = require('bunyan');
 const { askPassword, getOrSetApi } = require("./build/src/lib/get-credentials");
 const config = require("./src/config/trading-config");
+const log = require("./src/config/logger-config");
 
 const clients = new Map();
-
-const log = bunyan.createLogger({
-    name: 'krakura',
-    streams: [{
-        type: 'rotating-file',
-        path: './logs/krakura.log',
-        period: '1d',   
-        count: 5
-    }]
-});
 
 (async () => {
 	await askPassword();
 	const {key, secret} = await getOrSetApi('kraken');
 	const {phrase} = await getOrSetApi('karura');
-	const krakenClient = new KrakenClient(key=key, secret=secret, logger=log);
-	const karuraClient = new KaruraClient(phrase=phrase, currencies=config.currencies, logger=log);
+	const krakenClient = new KrakenClient(key, secret, log);
+	const karuraClient = new KaruraClient(phrase, config.currencies, log);
 	log.info('Waiting for kraken client to be ready.');
 	await krakenClient.isReady;
 	log.info('Waiting for karura client to be ready.');

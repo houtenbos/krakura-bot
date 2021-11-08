@@ -82,13 +82,13 @@ async function saveApiCredentials(credentials: any, platform: platform) {
 	credentialsDocument[platform] = credentials;
 	// save them
 
-	const path = `./config/credentials`;
+	const path = `./src/config/credentials`;
 	const encrypted = encryptpwd.encryptJSON(credentialsDocument, password);
 	fs.writeFileSync(path, encrypted);
 }
 
 async function getApiCredentials(): Promise<credentialsDocument | undefined>{
-	const path = `./config/credentials`;
+	const path = `./src/config/credentials`;
 	if( !fs.existsSync(path) )
 		return;
 	
