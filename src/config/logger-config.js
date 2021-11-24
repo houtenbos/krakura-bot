@@ -15,7 +15,6 @@ module.exports = bunyan.createLogger({
         count: 5
     },
     {
-        level: config.logger.stdOutLevel || 'debug',
         stream: process.stdout
     }
 ]
