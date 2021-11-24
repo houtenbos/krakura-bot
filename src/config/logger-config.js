@@ -13,5 +13,10 @@ module.exports = bunyan.createLogger({
         path: `${logDir}/krakura.log`,
         period: '1d',   
         count: 5
-    }]
+    },
+    {
+        level: config.logger.stdOutLevel || 'debug',
+        stream: process.stdout
+    }
+]
 });
