@@ -16,9 +16,6 @@ class Logger{
                 period: '1d',   
                 count: 5
             },
-            {
-                stream: process.stdout
-            }
         ]
         })
     }
