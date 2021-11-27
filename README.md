@@ -13,7 +13,7 @@
 
 # Krakura
 
-<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/krakura.png" alt="Krakura Logo"/>
+<img src="https://github.com/matthewashley1/krakura-bot/blob/credentials/src/img/krakura.png" alt="Krakura Logo"/>
 
 <br>
 
