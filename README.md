@@ -2,7 +2,7 @@
 
 <br>
 
-<img src="https://github.com/matthewashley1/krakura-bot/blob/credentials/src/img/krakura.png"  width="80% alt="Krakura Logo"/>
+<img src="https://github.com/matthewashley1/krakura-bot/blob/credentials/src/img/krakura.png"  width="80%" alt="Krakura Logo"/>
 
 <br>
 
