@@ -154,36 +154,36 @@ class KaruraClient {
         setTimeout(() => {rejectHook('Connection timed out.')}, TIMEOUT);
 
         await this.api.tx.dex.swapWithExactSupply(
-                                path.map((item) => item.toChainData()),
-                                supplyAmount.toChainData(),
-                                parameters.output.balance.mul(slippage).toChainData()
-                                ).signAndSend(this.key, async ({events = [], status}) => {
-                                    this.logger.info(`Swap status: ${status.type}`);
+            path.map((item) => item.toChainData()),
+            supplyAmount.toChainData(),
+            parameters.output.balance.mul(slippage).toChainData()
+            ).signAndSend(this.key, async ({events = [], status}) => {
+                this.logger.info(`Swap status: ${status.type}`);
 
-                                    if (status.isInBlock || status.isFinalized ) {
-                                        // log event information
-                                        this.logger.debug('Events:');
-                                        events.forEach(({ event: { data, method, section }, phase }) => {
-                                            this.logger.debug('\t', phase.toString(), `: ${section}.${method}`, data.toString());
-                                        });
+                if (status.isInBlock || status.isFinalized ) {
+                    // log event information
+                    this.logger.debug('Events:');
+                    events.forEach(({ event: { data, method, section }, phase }) => {
+                        this.logger.debug('\t', phase.toString(), `: ${section}.${method}`, data.toString());
+                    });
 
-                                        // get trade costs from event data
-                                        const swap = this.getSwapData(events);
+                    // get trade costs from event data
+                    const swap = this.getSwapData(events);
 
-                                        // create result object
-                                        const result = {
-                                            costs: swap[quote],
-                                            volumeExecuted: swap[base],
-                                            fees: {'KAR': swap.fee, [supplyToken.toString()]: supplyAmount.toNumber()*this.config.fees.taker},
-                                            timeClosed: new Date(),
-                                            error: undefined as any
-                                        };
-                                        resolveHook(result);
-                                    }
-                                }).catch( (error) => {
-                                    this.logger.error(error);
-                                    resolveHook({ costs:0, volumeExecuted: 0, fees:[{'KAR':0.0022}], timeClosed: new Date(), error });
-                                });
+                    // create result object
+                    const result = {
+                        costs: swap[quote],
+                        volumeExecuted: swap[base],
+                        fees: {'KAR': swap.fee, [supplyToken.toString()]: supplyAmount.toNumber()*this.config.fees.taker},
+                        timeClosed: new Date(),
+                        error: undefined as any
+                    };
+                    resolveHook(result);
+                }
+            }).catch( (error) => {
+                this.logger.error(error);
+                resolveHook({ costs:0, volumeExecuted: 0, fees:[{'KAR':0.0022}], timeClosed: new Date(), error });
+            });
         return p;
     }
 

@@ -1,12 +1,17 @@
 import * as prompts from 'prompts';
-import * as encryptpwd from 'encrypt-with-password';
+// import * as encryptpwd from 'encrypt-with-password';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 type platform = "karura" | "kraken";
-type credentials = { key: string; secret: string; } | { phrase: string};
+type credentials = { key: string, secret: string } | { phrase: string};
 type credentialsDocument = {[key: string]: credentials }
 
 let password: string;
+let key: Buffer;
+const iv: Buffer = crypto.randomBytes(16)
+
 export async function askPassword(){
 	if( process.env.KRAKURA_PASSWORD )
 		return password = process.env.KRAKURA_PASSWORD;
@@ -19,10 +24,15 @@ export async function askPassword(){
 		});
 	
 	password = response.password;
+	key = crypto
+		.createHash('sha256')
+		.update(password)
+		.digest();
 }
 
 export async function getOrSetApi(platform: platform): Promise<credentials>{
 	const storedCredentials = await getApiCredentials();
+	
 	if( storedCredentials && storedCredentials[platform] )
 		return storedCredentials[platform];
 	
@@ -37,7 +47,7 @@ export async function getOrSetApi(platform: platform): Promise<credentials>{
 	}
 }
 
-async function setKrakenApiCredentials(): Promise<{ key: string; secret: string; }>{
+async function setKrakenApiCredentials(): Promise<{key: string, secret: string}>{
 	const response: {key: string, secret: string} = await prompts([{
 		type: 'password',
 		name: 'key',
@@ -57,7 +67,7 @@ async function setKrakenApiCredentials(): Promise<{ key: string; secret: string;
 	return {key, secret};
 }
 
-async function setKaruraCredentials(): Promise<{ phrase: string }>{
+async function setKaruraCredentials(): Promise<{phrase: string}>{
 	const response: {phrase: string} = await prompts([
 	{
 		type: 'password',
@@ -68,23 +78,27 @@ async function setKaruraCredentials(): Promise<{ phrase: string }>{
 	]);
 	
 	const {phrase} = response;
-	saveApiCredentials({phrase }, 'karura');
+	saveApiCredentials({phrase}, 'karura');
 	return {phrase};
 }
 
-
 async function saveApiCredentials(credentials: any, platform: platform) {
-	// get excisting credentials
+	// get existing credentials
 	let credentialsDocument = await getApiCredentials();
+
 	if( credentialsDocument==undefined )
 		credentialsDocument = {};
 	
 	credentialsDocument[platform] = credentials;
-	// save them
-
+	
 	const path = `./src/config/credentials`;
-	const encrypted = encryptpwd.encryptJSON(credentialsDocument, password);
-	fs.writeFileSync(path, encrypted);
+    
+	// Create Cipher
+	const cipher = crypto.createCipheriv('aes256', key, iv);
+    let encrypted = cipher.update(JSON.stringify(credentialsDocument), 'utf-8', 'hex');
+    encrypted += cipher.final('hex');
+
+    fs.writeFileSync(path, encrypted);
 }
 
 async function getApiCredentials(): Promise<credentialsDocument | undefined>{
@@ -97,8 +111,12 @@ async function getApiCredentials(): Promise<credentialsDocument | undefined>{
 		await askPassword();
 
 	try{
-		const credentials = encryptpwd.decryptJSON(encryptedCredentials, password);
-		return credentials;
+    	// Create Decipher
+		const decipher = crypto.createDecipheriv('aes256', key, iv);
+		let credentials = decipher.update(encryptedCredentials, 'hex', 'utf-8');
+		credentials += decipher.final('utf-8');
+
+		return JSON.parse(credentials);
 	}
 	catch(error){
 		throw new Error('Wrong password');

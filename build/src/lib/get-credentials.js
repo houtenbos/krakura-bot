@@ -11,9 +11,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOrSetApi = exports.askPassword = void 0;
 const prompts = require("prompts");
-const encryptpwd = require("encrypt-with-password");
+// import * as encryptpwd from 'encrypt-with-password';
 const fs = require("fs");
+const crypto = require("crypto");
 let password;
+let key;
+const iv = crypto.randomBytes(16);
 function askPassword() {
     return __awaiter(this, void 0, void 0, function* () {
         if (process.env.KRAKURA_PASSWORD)
@@ -25,6 +28,10 @@ function askPassword() {
             validate: (password) => !(typeof (password) == 'string' && password.length >= 4) ? `Please enter a password with more than 3 characters` : true
         });
         password = response.password;
+        key = crypto
+            .createHash('sha256')
+            .update(password)
+            .digest();
     });
 }
 exports.askPassword = askPassword;
@@ -61,6 +68,7 @@ function setKrakenApiCredentials() {
             }
         ]);
         const { key, secret } = response;
+        console.log(key, secret);
         saveApiCredentials({ key, secret }, 'kraken');
         return { key, secret };
     });
@@ -82,14 +90,20 @@ function setKaruraCredentials() {
 }
 function saveApiCredentials(credentials, platform) {
     return __awaiter(this, void 0, void 0, function* () {
-        // get excisting credentials
+        // get existing credentials
         let credentialsDocument = yield getApiCredentials();
         if (credentialsDocument == undefined)
             credentialsDocument = {};
         credentialsDocument[platform] = credentials;
         // save them
+        console.log(credentialsDocument);
         const path = `./src/config/credentials`;
-        const encrypted = encryptpwd.encryptJSON(credentialsDocument, password);
+        // Create Cipher
+        const cipher = crypto.createCipheriv('aes256', key, iv);
+        let encrypted = cipher.update(JSON.stringify(credentialsDocument), 'utf-8', 'hex');
+        encrypted += cipher.final('hex');
+        console.log('encrypted: ' + encrypted);
+        // const encrypted = encryptpwd.encryptJSON(credentialsDocument, password);
         fs.writeFileSync(path, encrypted);
     });
 }
@@ -101,9 +115,15 @@ function getApiCredentials() {
         const encryptedCredentials = fs.readFileSync(path).toString();
         if (!password)
             yield askPassword();
+        console.log(encryptedCredentials);
         try {
-            const credentials = encryptpwd.decryptJSON(encryptedCredentials, password);
-            return credentials;
+            // Create Decipher
+            const decipher = crypto.createDecipheriv('aes256', key, iv);
+            let credentials = decipher.update(encryptedCredentials, 'hex', 'utf-8');
+            credentials += decipher.final('utf-8');
+            console.log('decrypted: ' + credentials);
+            // const credentials = encryptpwd.decryptJSON(encryptedCredentials, password);
+            return JSON.parse(credentials);
         }
         catch (error) {
             throw new Error('Wrong password');
