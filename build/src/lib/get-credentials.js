@@ -11,8 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getOrSetApi = exports.askPassword = void 0;
 const prompts = require("prompts");
-const encryptpwd = require("encrypt-with-password");
 const fs = require("fs");
+const cryptojs = require("crypto-js");
 let password;
 function askPassword() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -82,15 +82,15 @@ function setKaruraCredentials() {
 }
 function saveApiCredentials(credentials, platform) {
     return __awaiter(this, void 0, void 0, function* () {
-        // get excisting credentials
+        // Get existing credentials
         let credentialsDocument = yield getApiCredentials();
         if (credentialsDocument == undefined)
             credentialsDocument = {};
         credentialsDocument[platform] = credentials;
-        // save them
         const path = `./src/config/credentials`;
-        const encrypted = encryptpwd.encryptJSON(credentialsDocument, password);
-        fs.writeFileSync(path, encrypted);
+        // Encrypt message credentials
+        const encryptedMessage = cryptojs.AES.encrypt(JSON.stringify(credentialsDocument), password).toString();
+        fs.writeFileSync(path, encryptedMessage);
     });
 }
 function getApiCredentials() {
@@ -102,8 +102,10 @@ function getApiCredentials() {
         if (!password)
             yield askPassword();
         try {
-            const credentials = encryptpwd.decryptJSON(encryptedCredentials, password);
-            return credentials;
+            // Decrypt message credentials
+            const decryptedMessageBytes = cryptojs.AES.decrypt(encryptedCredentials, password);
+            const decryptedMessage = decryptedMessageBytes.toString(cryptojs.enc.Utf8);
+            return JSON.parse(decryptedMessage);
         }
         catch (error) {
             throw new Error('Wrong password');

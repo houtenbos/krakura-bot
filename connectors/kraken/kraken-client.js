@@ -464,7 +464,7 @@ class KrakenClient extends Client{
                 this.logger.warn('Broken cancel order is already closed');
                 return order;
             case 'cancelled':
-                this.logger.info('Order was succesfully cancelled');
+                this.logger.info('Order was successfully cancelled');
                 return order;
             default:
                 this.logger.error(`Unknown order status while cancelling order: ${JSON.stringify(order)}`);
@@ -512,7 +512,7 @@ class KrakenClient extends Client{
         }
 
         if(!order) {
-            // retry openening
+            // retry opening
             this.logger.warn(`Could not find broken order, appears not created:, ${JSON.stringify(payload)}`);
             // @ts-ignore
             return this.createOrder(...payload);

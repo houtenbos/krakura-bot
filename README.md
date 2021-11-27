@@ -2,17 +2,11 @@
 
 <br>
 
-<p float="left">
-<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/kraken.png" width="40%" alt="Kraken.com Logo"/>
+<img src="https://github.com/matthewashley1/krakura-bot/blob/credentials/src/img/krakura.png"  width="50%" alt="Krakura Logo"/>
 
-<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/karura.png" width="40%" alt="Karura Logo"/> 
-</p>
+Is an Arbitrage bot between the Kraken exchange and the Karura DeFi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
 
-<br>
-<br>
-
-# krarura-bot
-Is an Arbitrage bot between Kraken and Karura. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
+[Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo).
 
 The arbitrage bot constantly checks for pricing differences between the two platforms and executes trades when they are profitable as defined in the `trading-config.js` file. 
 
@@ -47,9 +41,8 @@ crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
 ## Build/Starting the Project
 
 1) Install all dependencies by running `yarn` in the project directory.
-2) Generate types and helper functions by running `yarn codegen`.
-3) Build the project by running `yarn build`.
-4) Start the arbitrage bot by running `yarn start`.
+2) Build the project by running `yarn build`.
+3) Start the arbitrage bot by running `yarn start`.
 
 ## Bot Startup
 
@@ -65,3 +58,12 @@ When the arbitrage bot starts for the first time, you will be presented with a s
     - This is the private key of your kraken api key
 4) What is your karura phrase?
     - This is the phrase of the wallet address associated with your karura account 
+
+### Supported Platforms
+<p float="left">
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/kraken.png" width="40%" alt="Kraken.com Logo"/>
+
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/karura.png" width="40%" alt="Karura Logo"/> 
+</p>
+
+<br>

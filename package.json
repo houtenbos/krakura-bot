@@ -1,13 +1,11 @@
 {
-  "name": "krakura-bot",
+  "name": "krakura",
   "version": "0.0.1",
-  "description": "Arbitrage trading bot",
+  "description": "Arbitrage Trading Bot",
   "main": "index.js",
   "scripts": {
     "build": "rm -rf build && tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "codegen": "graphql-codegen --config codegen.yml",
-    "server": "node ./build/graphql_server/server.js",
     "start": "node ./index.js"
   },
   "repository": {
@@ -39,9 +37,7 @@
     "@polkadot/api": "^6.5.2",
     "@polkadot/keyring": "^7.6.1",
     "bunyan": "^1.8.15",
-    "encrypt-with-password": "^1.0.0",
-    "graphql": "^15.6.1",
-    "graphql-request": "^3.6.1",
+    "crypto-js": "^4.1.1",
     "kraken-api": "^1.0.1",
     "lodash": "^4.17.21",
     "prompts": "^2.4.2",
@@ -49,14 +45,6 @@
     "typescript": "^4.4.4"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "2.2.1",
-    "@graphql-codegen/typescript": "2.2.4",
-    "@graphql-codegen/typescript-graphql-request": "^4.1.6",
-    "@graphql-codegen/typescript-operations": "^2.1.8",
-    "@graphql-codegen/typescript-resolvers": "2.3.2",
-    "@graphql-tools/graphql-file-loader": "^7.3.1",
-    "@graphql-tools/load": "^7.4.0",
-    "@types/prompts": "^2.0.14",
-    "apollo-server": "^3.4.0"
+    "@types/prompts": "^2.0.14"
   }
 }
