@@ -6,7 +6,7 @@
 
 Is an Arbitrage bot between the Kraken exchange and the Karura DeFi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
 
-[Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo).
+[Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo)
 
 The arbitrage bot constantly checks for pricing differences between the two platforms and executes trades when they are profitable as defined in the `trading-config.js` file.
 
@@ -52,13 +52,18 @@ When the arbitrage bot starts for the first time, you will be presented with a s
 ### Bot Questions
 
 1) Fill in your password:
-    * This is the password to encrypt your credentials
+    * This is the password to encrypt your credentials.
 2) What is your kraken api key?
-    * This is the api key you generate on kraken.com
+    * This is the api key you generate on kraken.com.
 3) What is your kraken api secret?  
-    * This is the private key of your kraken api key
+    * This is the private key of your kraken api key.
 4) What is your karura phrase?
-    * This is the phrase of the wallet address associated with your karura account 
+    * This is the phrase of the wallet address associated with your karura account.
+
+### Platform Requirements
+
+1) You are required to have balances on both platforms to cover transaction fees.
+2) The Kraken Exchange has a minimum order size for KSM. [Kraken Minimum Order Sizes](https://support.kraken.com/hc/en-us/articles/205893708-Minimum-order-size-volume-for-trading)
 
 ### Supported Platforms
 
