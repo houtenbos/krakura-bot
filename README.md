@@ -2,21 +2,16 @@
 
 <br>
 
-<p float="left">
-<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/kraken.png" width="40%" alt="Kraken.com Logo"/>
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/krakura.png"  width="50%" alt="Krakura Logo"/>
 
-<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/karura.png" width="40%" alt="Karura Logo"/> 
-</p>
+Is an Arbitrage bot between the Kraken exchange and the Karura DeFi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
 
-<br>
-<br>
+[Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo).
 
-# krarura-bot
-Is an Arbitrage bot between Kraken and Karura. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
-
-The arbitrage bot constantly checks for pricing differences between the two platforms and executes trades when they are profitable as defined in the `trading-config.js` file. 
+The arbitrage bot constantly checks for pricing differences between the two platforms and executes trades when they are profitable as defined in the `trading-config.js` file.
 
 ## Supported Currency Pairs
+
 * KSM/KUSD
   
 ## Setup
@@ -29,7 +24,7 @@ git clone https://github.com/houtenbos/krakura-bot.git
 
 ### Define your Trading Configuration
 
-The trading configuration of the arbitrage bot can be found at `src/config/trading-config.js`. This file defines the max trading size of supported currency pairs and the minimal profit margin you are willing to take when executing trades. Adjust this file to your liking and level. 
+The trading configuration of the arbitrage bot can be found at `src/config/trading-config.js`. This file defines the max trading size of supported currency pairs and the minimal profit margin you are willing to take when executing trades. Adjust this file to your liking and level.
 
 ```javascript
 module.exports = {
@@ -47,9 +42,8 @@ crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
 ## Build/Starting the Project
 
 1) Install all dependencies by running `yarn` in the project directory.
-2) Generate types and helper functions by running `yarn codegen`.
-3) Build the project by running `yarn build`.
-4) Start the arbitrage bot by running `yarn start`.
+2) Build the project by running `yarn build`.
+3) Start the arbitrage bot by running `yarn start`.
 
 ## Bot Startup
 
@@ -58,10 +52,20 @@ When the arbitrage bot starts for the first time, you will be presented with a s
 ### Bot Questions
 
 1) Fill in your password:
-    - This is the password to encrypt your credentials
+    * This is the password to encrypt your credentials
 2) What is your kraken api key?
-    - This is the api key you generate on kraken.com
+    * This is the api key you generate on kraken.com
 3) What is your kraken api secret?  
-    - This is the private key of your kraken api key
+    * This is the private key of your kraken api key
 4) What is your karura phrase?
-    - This is the phrase of the wallet address associated with your karura account 
+    * This is the phrase of the wallet address associated with your karura account 
+
+### Supported Platforms
+
+<p float="left">
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/kraken.png" width="40%" alt="Kraken.com Logo"/>
+
+<img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/karura.png" width="40%" alt="Karura Logo"/> 
+</p>
+
+<br>
