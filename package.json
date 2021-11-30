@@ -36,6 +36,7 @@
     "@acala-network/sdk-wallet": "^3.0.2",
     "@polkadot/api": "^6.5.2",
     "@polkadot/keyring": "^7.6.1",
+    "@polkadot/wasm-crypto": "^4.4.1",
     "bunyan": "^1.8.15",
     "crypto-js": "^4.1.1",
     "kraken-api": "^1.0.1",
