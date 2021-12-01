@@ -53,7 +53,7 @@ Run the arbitrage bot with Docker by running the following command.
 docker-compose up -d && docker attach krakura
 ```
 
-Stop the arbitrage bot with `CRTL+C` and make sure to take down the docker container with the following command. Make sure to run the take down command from within the root directory of the project.
+Stop the arbitrage bot with `CTRL+C` and make sure to take down the docker container with the following command. Make sure to run the take down command from within the root directory of the project.
 
 ```bash
 docker-compose down
@@ -61,7 +61,7 @@ docker-compose down
 
 ## Bot Startup
 
-When the arbitrage bot starts for the first time, you will be presented with a series of questions to obtain platform credentials. Once all startup questions are answered, your credentials will be encrypted and stored locally on your machine in the project at `src/config/credentials.rtf`. Now, when the arbitrage bot starts, you will only be required to enter your password for the arbitrage bot to access your platform credentials. If you need to reset your stored platform credentials, delete the credentials file at `src/config/credentials.rtf` and restart the arbitrage bot. Once all startup questions are answered, then the arbitrage bot will start looking for profitable trades.
+When the arbitrage bot starts for the first time, you will be presented with a series of questions to obtain platform credentials. Once all startup questions are answered, your credentials will be encrypted and stored locally on your machine in the project at `src/config/credentials`. Now, when the arbitrage bot starts, you will only be required to enter your password for the arbitrage bot to access your platform credentials. If you need to reset your stored platform credentials, delete the credentials file at `src/config/credentials` and restart the arbitrage bot. Once all startup questions are answered, then the arbitrage bot will start looking for profitable trades.
 
 ### Bot Questions
 
