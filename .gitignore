@@ -1,6 +1,5 @@
 # Logs
-logs
-*.log
+logs/*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -103,6 +102,7 @@ dist
 # TernJS port file
 .tern-port
 
+# User API credentials
 *credentials
 
 # VScode settings
@@ -115,8 +115,13 @@ test.js
 *.js.map
 
 # Apple files
-.DS_Store
+**/.DS_Store
 
 # Lock files
 package-lock.json
 yarn.lock
+
+# Docker
+.dockerignore
+Dockerfile
+krakura/

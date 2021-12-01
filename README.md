@@ -4,7 +4,7 @@
 
 <img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/krakura.png"  width="50%" alt="Krakura Logo"/>
 
-Is an Arbitrage bot between the Kraken exchange and the Karura DeFi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
+Is an arbitrage trading bot between the Kraken CEX and the Karura Defi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
 
 [Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo)
 
@@ -39,15 +39,29 @@ crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
 }
 ```
 
-## Build/Starting the Project
+## Build / Starting the Project
 
 1) Install all dependencies by running `yarn` in the project directory.
 2) Build the project by running `yarn build`.
 3) Start the arbitrage bot by running `yarn start`.
 
+## Run with Docker
+
+Run the arbitrage bot with Docker by running the following command.
+
+```bash
+docker-compose up -d && docker attach krakura
+```
+
+Stop the arbitrage bot with `CTRL+C` and make sure to take down the docker container with the following command. Make sure to run the take down command from within the root directory of the project.
+
+```bash
+docker-compose down
+```
+
 ## Bot Startup
 
-When the arbitrage bot starts for the first time, you will be presented with a series of questions to obtain platform credentials. Once all startup questions are answered, your credentials will be encrypted and stored locally on your machine in the project at `src/config/credentials`. Now, when the arbitrage bot starts, you will only be required to enter your password for the arbitrage bot to access your platform credentials. If you need to reset your stored platform credentials, delete the credentials file at `src/config/credentials` and restart the arbitrage bot with `yarn start`. Once all startup questions are answered, then the arbitrage bot will start looking for profitable trades.
+When the arbitrage bot starts for the first time, you will be presented with a series of questions to obtain platform credentials. Once all startup questions are answered, your credentials will be encrypted and stored locally on your machine in the project at `src/config/credentials`. Now, when the arbitrage bot starts, you will only be required to enter your password for the arbitrage bot to access your platform credentials. If you need to reset your stored platform credentials, delete the credentials file at `src/config/credentials` and restart the arbitrage bot. Once all startup questions are answered, then the arbitrage bot will start looking for profitable trades.
 
 ### Bot Questions
 

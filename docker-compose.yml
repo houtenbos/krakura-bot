@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  app:
+    container_name: krakura
+    restart: always
+    image: matthewashley1/krakura:latest
+    stdin_open: true
+    tty: true
+    init: true
+    volumes:
+      - ./src/config:/app/src/config
+    entrypoint: ["node", "/app/index.js"]
+  
