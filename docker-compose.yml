@@ -6,6 +6,9 @@ services:
     image: matthewashley1/krakura:latest
     stdin_open: true
     tty: true
+    init: true
     volumes:
       - ./krakura:/app/src/info
-    entrypoint: ["yarn", "start"] 
+      - ./src/config/trading-config.js:/app/src/config/trading-config.js
+    entrypoint: ["node", "/app/index.js"]
+  

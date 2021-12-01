@@ -4,7 +4,7 @@
 
 <img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/krakura.png"  width="50%" alt="Krakura Logo"/>
 
-Is an Arbitrage bot between the Kraken exchange and the Karura DeFi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
+Is an arbitrage trading bot between the Kraken CEX and the Karura Defi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
 
 [Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo)
 
