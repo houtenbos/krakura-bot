@@ -83,7 +83,7 @@ async function saveApiCredentials(credentials: any, platform: platform) {
 	
 	credentialsDocument[platform] = credentials;
 	
-	const path = `./src/info/credentials`;
+	const path = `./src/config/credentials`;
 
 	// Encrypt message credentials
 	const encryptedMessage = cryptojs.AES.encrypt(JSON.stringify(credentialsDocument), password).toString();
@@ -92,7 +92,7 @@ async function saveApiCredentials(credentials: any, platform: platform) {
 }
 
 async function getApiCredentials(): Promise<credentialsDocument | undefined>{
-	const path = `./src/info/credentials`;
+	const path = `./src/config/credentials`;
 	
 	if( !fs.existsSync(path) )
 		return;

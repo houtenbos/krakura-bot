@@ -8,7 +8,6 @@ services:
     tty: true
     init: true
     volumes:
-      - ./krakura:/app/src/info
-      - ./src/config/trading-config.js:/app/src/config/trading-config.js
+      - ./src/config:/app/src/config
     entrypoint: ["node", "/app/index.js"]
   
