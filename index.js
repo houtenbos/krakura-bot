@@ -81,6 +81,7 @@ const clients = new Map();
 				// calculate profit and loss
 				const profitQuote = sellOrder.costs - (sellOrder.fees[quote] || 0) - buyOrder.costs - (buyOrder.fees[quote] || 0);
 				const profitBase = buyOrder.volumeExecuted - (buyOrder.fees[base] || 0) - sellOrder.volumeExecuted - (sellOrder.fees[base] || 0);
+				const profit = profitQuote + profitBase * (sellPrice + buyPrice) / 2;
 
 				log.info(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(5)} ${base}.`);
 
@@ -104,14 +105,15 @@ const clients = new Map();
 
 				saveOrder(buyOrderExtended);
 				saveOrder(sellOrderExtended);
-				saveTrade({buyOrder: buyOrderExtended, sellOrder: sellOrderExtended, time: new Date()});
+
+				saveTrade({buyOrder: buyOrderExtended, sellOrder: sellOrderExtended, time: new Date(), volume: tradeVolume, profitQuote, profitBase, profit});
 
 				// refresh balance by getting the balances from the platforms
 				balance = new Balance([...clients.entries()], config.currencies);
 				await balance.isReady;
+				await new Promise(r => setTimeout(r, 5000));
 			}
 		}
-		await new Promise(r => setTimeout(r, 5000));
 	}
 
 })();

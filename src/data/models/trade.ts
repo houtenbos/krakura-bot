@@ -12,7 +12,10 @@ const schema = new mongoose.Schema({
     time: {
         type: Date,
         required: true
-    }
+    },
+    profitQuote: {type: Number},
+    profitBase: {type: Number},
+    profit: {type: Number}
 });
 
 export const Trade = mongoose.model('trade', schema);

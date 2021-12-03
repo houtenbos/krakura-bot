@@ -45,6 +45,9 @@ interface Order {
 }
 
 export function saveOrder(input: Order){
+    if( !input.price ){
+        input.price = input.costs / input.volumeExecuted;
+    }
     const order = new Order(input);
     return order.save().catch( (e: Error) => console.log(e));
 }
