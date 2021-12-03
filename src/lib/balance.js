@@ -1,5 +1,5 @@
 const Client = require("../../connectors/client");
-const { saveBalance } = require("../../build/src/data/balance-log");
+const { saveBalance } = require("../../build/src/data/data-log");
 
 class Balance{
 	/** @type {Map<String, BalanceObject>} */
