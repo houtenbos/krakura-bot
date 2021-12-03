@@ -2,8 +2,8 @@ const KrakenClient = require("./connectors/kraken/kraken-client");
 const { KaruraClient } = require("./build/connectors/karura/karura-client");
 const Balance = require("./src/lib/balance");
 const { askPassword, getOrSetApi } = require("./build/src/lib/get-credentials");
-const config = require("./src/config/trading-config");
-const Logger = require("./src/config/logger-config");
+const config = require("./config/trading-config");
+const Logger = require("./src/lib/log");
 const { PriceAggregator } = require("./build/src/lib/price");
 const { saveOrder, saveTrade } = require("./build/src/data/data-log");
 

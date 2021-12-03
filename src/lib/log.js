@@ -1,12 +1,7 @@
 const mongoStream = require('stream-to-mongo-db').streamToMongoDB;
 const bunyan = require('bunyan');
 const fs = require('fs');
-const logDir = './logs';
-
-if (!fs.existsSync(logDir)){
-    fs.mkdirSync(logDir);
-}
-
+const config = require('../../config/user_config.json');
 
 class Logger{
     constructor(name = 'krakura' ){
@@ -37,7 +32,7 @@ class Logger{
 
 function createStream(name = 'krakura'){
     const writableStream = new MyStream({
-        dbURL : "mongodb://127.0.0.1:27017/krakura_log",
+        dbURL : (config.address || "mongodb://127.0.0.1:27017/") + "krakura_log",
         collection :  name,
         useUnifiedTopology: true
     });

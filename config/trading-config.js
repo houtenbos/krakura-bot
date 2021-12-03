@@ -5,6 +5,6 @@ module.exports = {
 		'KSM/USD': 0.02,
 		'KAR/USD': 10
 	},
-	minProfitMargin: 0.005,
+	minProfitMargin: 0.010,
 	crossPlatforms: [['kraken', 'karura'], ['karura', 'kraken']]
 }

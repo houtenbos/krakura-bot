@@ -125,5 +125,5 @@ yarn.lock
 .dockerignore
 Dockerfile
 krakura/
-
+config/user_config.json
 build/
