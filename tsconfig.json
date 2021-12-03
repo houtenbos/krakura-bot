@@ -12,9 +12,10 @@
         "noImplicitAny": false,
         "outDir": "./build",
         "allowJs": true,
+        "resolveJsonModule": true
     },
     "compileOnSave": true,
-    "include": [ "connectors/karura/karura-client.ts", "src/lib/get-credentials.ts"],
+    "include": [ "connectors/karura/karura-client.ts", "src/lib/get-credentials.ts", "src/lib/price.ts", "src/data/**/*"],
     "exclude": ["node_modules"],
     "files": [
         "connectors/karura/karura-client.ts",

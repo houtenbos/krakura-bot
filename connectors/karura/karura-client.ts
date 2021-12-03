@@ -11,7 +11,7 @@ import { SwapParameters } from "@acala-network/sdk-swap/swap-parameters";
 const TIMEOUT = 60*1000;
 
 type balance = {free: string; frozen: string; reserved: string};
-interface KaruraClient {
+export interface KaruraClient {
     address: string
     currencies: string[]
     logger: any
@@ -30,7 +30,7 @@ const RPC_ENDPOINT = "wss://karura.api.onfinality.io/public-ws";
 /**
  * KaruraClient connects to the Polkadot.js API
  */
-class KaruraClient {
+export class KaruraClient {
     constructor(phrase: string, currencies: string[], logger: any = console) {
 
         this.currencies = currencies.filter(c => availableCurrencies.includes(c));
@@ -294,5 +294,3 @@ class KaruraClient {
         return status.toString() == 'Enabled';
     }
 }
-
-module.exports = KaruraClient;
