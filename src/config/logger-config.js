@@ -1,3 +1,4 @@
+const mongoStream = require('stream-to-mongo-db').streamToMongoDB;
 const bunyan = require('bunyan');
 const fs = require('fs');
 const logDir = './logs';
@@ -6,18 +7,13 @@ if (!fs.existsSync(logDir)){
     fs.mkdirSync(logDir);
 }
 
+
 class Logger{
     constructor(name = 'krakura' ){
-        this.log =  bunyan.createLogger({
+        this.log = bunyan.createLogger({
             name,
-            streams: [{
-                type: 'rotating-file',
-                path: `${logDir}/krakura.log`,
-                period: '1d',   
-                count: 5
-            },
-        ]
-        })
+            streams: [createStream(name)]
+        });
     }
     error(msg){
         console.log(msg);
@@ -38,5 +34,33 @@ class Logger{
     trace(msg){
     }
 }
+
+function createStream(name = 'krakura'){
+    const writableStream = new MyStream({
+        dbURL : "mongodb://127.0.0.1:27017/krakura_log",
+        collection :  name,
+        useUnifiedTopology: true
+    });
+
+    const mongoDbStream = {
+        type: 'raw',
+        level: 'debug',
+        stream: writableStream
+    };
+
+    return mongoDbStream;
+}
+
+class MyStream{
+    constructor(options){
+        this.mongoStream = mongoStream(options);
+        this.levelToName = new Map([[bunyan.TRACE, 'trace'], [bunyan.DEBUG, 'debug'], [bunyan.INFO, 'info'], [bunyan.WARN, 'warn'], [bunyan.ERROR, 'error'], [bunyan.FATAL, 'fatal']]);
+    }
+    write(rec){
+        rec.msg = this.levelToName.get(rec.level) + ': '+ rec.msg;
+        this.mongoStream.write(rec);
+    }
+}
+
 
 module.exports = Logger;

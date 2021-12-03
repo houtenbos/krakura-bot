@@ -1,5 +1,33 @@
 version: '3.8'
 services:
+
+  # MongoDB service
+  mongo:
+    container_name: mongo
+    restart: always
+    image: mongo
+    volumes:
+      - ./krakura/mongo:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - krakura-app
+
+  # Grafana Dashboarding service
+  grafana:
+    container_name: grafana
+    restart: always
+    image: grafana/grafana-oss
+    user: "1000"
+    volumes:
+      - ./krakura/grafana:/var/lib/grafana
+    ports: 
+      - "3000:3000"
+    networks:
+      - krakura-app
+
+
+  # App service
   app:
     container_name: krakura
     restart: always
@@ -9,5 +37,14 @@ services:
     init: true
     volumes:
       - ./src/config:/app/src/config
+    networks:
+      - krakura-app
+    depends_on:
+      - mongo
+      - grafana
     entrypoint: ["node", "/app/index.js"]
-  
+
+# Defines seperate docker network for container services to run on 
+networks:
+  krakura-app:
+    driver: bridge

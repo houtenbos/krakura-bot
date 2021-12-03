@@ -125,3 +125,5 @@ yarn.lock
 .dockerignore
 Dockerfile
 krakura/
+
+build/
