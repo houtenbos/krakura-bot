@@ -10,7 +10,7 @@ if (!fs.existsSync(logDir)){
 
 class Logger{
     constructor(name = 'krakura' ){
-        this.log =  bunyan.createLogger({
+        this.log = bunyan.createLogger({
             name,
             streams: [createStream(name)]
         });
@@ -37,7 +37,7 @@ class Logger{
 
 function createStream(name = 'krakura'){
     const writableStream = new MyStream({
-        dbURL : "mongodb://localhost:27017/krakura_log",
+        dbURL : "mongodb://127.0.0.1:27017/krakura_log",
         collection :  name,
         useUnifiedTopology: true
     });

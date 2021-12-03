@@ -112,7 +112,6 @@ const clients = new Map();
 			}
 		}
 		await new Promise(r => setTimeout(r, 5000));
-		process.exit(0);
 	}
 
 })();
