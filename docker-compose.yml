@@ -36,7 +36,7 @@ services:
     tty: true
     init: true
     volumes:
-      - ./src/config:/app/src/config
+      - ./config:/app/config
     networks:
       - krakura-app
     depends_on:

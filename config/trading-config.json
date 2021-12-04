@@ -1,0 +1,10 @@
+{
+	"currencies": ["KSM", "KAR", "USD", "KUSD"],
+	"currencyPairs": ["KSM/USD"],
+	"maxTradeSize": {
+		"KSM/USD": 0.2,
+		"KAR/USD": 10
+	},
+	"minProfitMargin": 0.012,
+	"crossPlatforms": [["kraken", "karura"], ["karura", "kraken"]]
+}
