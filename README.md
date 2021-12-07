@@ -89,7 +89,7 @@ docker-compose up -d --force-recreate && docker attach krakura
 
 View the bot's **Grafana Dashboard** by navigating to `localhost:3000`. To [login](https://grafana.com/docs/grafana/v7.5/administration/configuration/#admin_user) the default username is **`admin`** and the default password is **`admin`**. You will then be prompted to updated the password for the admin account which you can do or skip.
 
-Verify the Loki log aggregation service is ready to ingest logs by navigating to `localhost:3100/ready`. A ready message will be outputted when the service is ready. If a waiting message is displayed, just refresh the page until the ready message is presented. 
+Verify the Loki log aggregation service is ready to ingest logs by navigating to `localhost:3100/ready`. A ready message will be outputted when the service is ready. If a waiting message is displayed, such as `"Ingester not ready: waiting for 15s after being ready"` just refresh the page until the ready message is presented.
 
 Stop the arbitrage bot with `CTRL+C` and make sure to take down the docker containers with the following command. Make sure to run the take down command from within the root directory of the project. The Loki and Grafana containers sometimes take a while to stop.
 
