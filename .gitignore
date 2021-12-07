@@ -126,5 +126,5 @@ yarn.lock
 Dockerfile
 krakura/
 src/config/grafana
-
+config/user_config.json
 build/
