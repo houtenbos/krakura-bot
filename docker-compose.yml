@@ -1,31 +1,46 @@
 version: '3.8'
 services:
 
-  # MongoDB service
-  mongo:
-    container_name: mongo
+  # Log aggregation service
+  loki:
+    container_name: loki
     restart: always
-    image: mongo
+    image: grafana/loki:2.4.1
     volumes:
-      - ./krakura/mongo:/data/db
+      - ./src/config/loki:/etc/loki
     ports:
-      - "27017:27017"
+      - "3100:3100"
+    command: -config.file=./etc/loki/loki-config.yml
     networks:
       - krakura-app
 
+  # Logging agent service
+  promtail:
+    container_name: promtail
+    restart: always
+    image: grafana/promtail:2.4.1
+    volumes:
+      - ./src/config/promtail:/etc/promtail
+    # ports:
+    #   - "1514:1514" # this is only needed if you are going to send syslogs
+    command: -config.file=./etc/promtail/promtail-config.yml
+    networks:
+      - krakura-app
+  
   # Grafana Dashboarding service
   grafana:
     container_name: grafana
     restart: always
     image: grafana/grafana-oss
-    user: "1000"
+    user: "501"
     volumes:
-      - ./krakura/grafana:/var/lib/grafana
+      - ./src/config/grafana/data:/var/lib/grafana
+      - ./src/config/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./src/config/grafana/dashboards:/etc/grafana/provisioning/dashboards
     ports: 
       - "3000:3000"
     networks:
       - krakura-app
-
 
   # App service
   app:
@@ -36,11 +51,13 @@ services:
     tty: true
     init: true
     volumes:
-      - ./config:/app/config
+      - ./src/config/app:/app/src/config/app
+      - ./src/logs:/app/src/logs
     networks:
       - krakura-app
     depends_on:
-      - mongo
+      - loki
+      - promtail
       - grafana
     entrypoint: ["node", "/app/index.js"]
 
