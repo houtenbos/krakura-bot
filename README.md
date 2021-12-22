@@ -4,9 +4,11 @@
 
 <img src="https://github.com/matthewashley1/krakura-bot/blob/master/src/img/krakura.png"  width="50%" alt="Krakura Logo"/>
 
-Is an arbitrage trading bot between the Kraken CEX and the Karura Defi Platform. This project was created through an [Encode Club](https://www.encode.club/) Polkadot Hackathon.
+Is an arbitrage trading bot between the Kraken CEX and the Karura Defi Platform. This project was created through [Encode Club's](https://www.encode.club/) Polkadot and Hack Defi Hackathons.
 
-[Medium Article](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Final Video](https://www.youtube.com/watch?v=pcgeV_22eGo)
+Medium Articles: [Polkadot](https://medium.com/encode-club/polkadot-hack-finale-prizewinners-and-summary-931627c64d9), [Hack Defi](https://medium.com/encode-club/hack-defi-with-wintermute-finale-prizewinners-and-summary-3a5de6e92967)
+
+Finals Video: [Polkadot](https://youtu.be/pcgeV_22eGo?t=2916), [Hack Defi](https://youtu.be/mt6N6cLQ7WE?t=1942)
 
 The arbitrage bot constantly checks for pricing differences between the two platforms and executes trades when they are profitable as defined in the `trading-config.js` file.
 

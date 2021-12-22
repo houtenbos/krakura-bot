@@ -117,6 +117,9 @@ test.js
 # Apple files
 **/.DS_Store
 
+# Snyk
+.dccache
+
 # Lock files
 package-lock.json
 yarn.lock
