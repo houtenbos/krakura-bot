@@ -67,8 +67,15 @@ const clients = new Map();
 				const profitMargin = PnL / buyCostsNett;
 
 				log.info(`Buy ${tradeVolume} ${base} @ ${buyPlatform} for ${buyPrice.toFixed(2)}, sell @ ${sellPlatform} for ${sellPrice.toFixed(2)}  - margin: ${profitMargin.toFixed(4)*100} %`);
-				if( profitMargin < config.minProfitMargin ){
-					continue;
+				if( buyPlatform == 'kraken' ){
+					if( profitMargin < config.minProfitMargin.buyKrakenSellKarura ){
+						continue;
+					}
+				}
+				else{
+					if( profitMargin < config.minProfitMargin.sellKrakenBuyKarura ){
+						continue;
+					}
 				}
 				
 				log.info('Profitable trade detected');

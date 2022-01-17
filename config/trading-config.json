@@ -5,6 +5,9 @@
 		"KSM/USD": 0.2,
 		"KAR/USD": 10
 	},
-	"minProfitMargin": 0.012,
+	"minProfitMargin": {
+		"buyKrakenSellKarura": 0.035,
+		"sellKrakenBuyKarura": -0.015
+	},
 	"crossPlatforms": [["kraken", "karura"], ["karura", "kraken"]]
 }
