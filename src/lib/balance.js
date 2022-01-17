@@ -1,6 +1,4 @@
 const Client = require("../../connectors/client");
-const { saveBalance } = require("../../build/src/data/data-log");
-
 class Balance{
 	/** @type {Map<String, BalanceObject>} */
 	platformBalances = new Map();
@@ -32,26 +30,6 @@ class Balance{
 	 */
 	setBalance(platform, currency, amount){
 		this.platformBalances.get(platform)?.setBalance(currency, amount);
-	}
-
-	saveBalances(){
-		for( const platform of this.platforms ){
-			for( const currency of this.currencies ){
-				this.saveBalance(platform, currency);
-			}
-		}
-	}
-
-	saveBalance(platform, currency){
-		const balance = this.getBalance(platform, currency);
-		saveBalance({
-			platform,
-			currency,
-			total: balance,
-			free: balance,
-			placed: 0,
-			time: new Date()
-		});
 	}
 }
 

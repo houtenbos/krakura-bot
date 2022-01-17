@@ -1,5 +1,5 @@
 # Logs
-logs/*
+src/logs/*
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -117,6 +117,9 @@ test.js
 # Apple files
 **/.DS_Store
 
+# Snyk
+.dccache
+
 # Lock files
 package-lock.json
 yarn.lock
@@ -125,5 +128,5 @@ yarn.lock
 .dockerignore
 Dockerfile
 krakura/
-config/user_config.json
 build/
+src/config/grafana/data

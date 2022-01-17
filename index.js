@@ -2,10 +2,8 @@ const KrakenClient = require("./connectors/kraken/kraken-client");
 const { KaruraClient } = require("./build/connectors/karura/karura-client");
 const Balance = require("./src/lib/balance");
 const { askPassword, getOrSetApi } = require("./build/src/lib/get-credentials");
-const config = require("./config/trading-config");
+const config = require("./src/config/app/trading-config");
 const Logger = require("./src/lib/log");
-const { PriceAggregator } = require("./build/src/lib/price");
-const { saveOrder, saveTrade } = require("./build/src/data/data-log");
 
 const log = new Logger('krakura');
 const clients = new Map();
@@ -20,17 +18,13 @@ const clients = new Map();
 	await krakenClient.isReady;
 	log.info('Waiting for karura client to be ready.');
 	await karuraClient.isReady;
-	const platforms = new Map([['kraken', krakenClient], ['karura', karuraClient]]);
-	const priceAggregator = new PriceAggregator(platforms, config.currencyPairs);
-
+	
 	clients.set('kraken', krakenClient);
 	clients.set('karura', karuraClient);
 
 	let balance = new Balance([...clients.entries()], config.currencies);
 	await balance.isReady;
-	balance.saveBalances();
-	setInterval(() => balance.saveBalances(), 60000);
-
+	
 	await new Promise(r => setTimeout(r, 10000));
 
 	// check buy kraken sell karura opportunity
@@ -88,32 +82,8 @@ const clients = new Map();
 				// calculate profit and loss
 				const profitQuote = sellOrder.costs - (sellOrder.fees[quote] || 0) - buyOrder.costs - (buyOrder.fees[quote] || 0);
 				const profitBase = buyOrder.volumeExecuted - (buyOrder.fees[base] || 0) - sellOrder.volumeExecuted - (sellOrder.fees[base] || 0);
-				const profit = profitQuote + profitBase * (sellPrice + buyPrice) / 2;
-
+				
 				log.info(`Trade profits: ${profitQuote.toFixed(2)} ${quote}, ${profitBase.toFixed(5)} ${base}.`);
-
-				// add some additional info
-				const buyOrderExtended = Object.assign({
-					platform: buyPlatform,
-					assetPair: currencyPair,
-					time: new Date(),
-					direction: 'buy',
-					volume: tradeVolume,
-					},
-					buyOrder);
-				const sellOrderExtended = Object.assign({
-					platform: sellPlatform,
-					assetPair: currencyPair,
-					time: new Date(),
-					direction: 'sell',
-					volume: tradeVolume,
-					},
-					sellOrder);
-
-				saveOrder(buyOrderExtended);
-				saveOrder(sellOrderExtended);
-
-				saveTrade({buyOrder: buyOrderExtended, sellOrder: sellOrderExtended, time: new Date(), volume: tradeVolume, profitQuote, profitBase, profit});
 
 				// refresh balance by getting the balances from the platforms
 				balance = new Balance([...clients.entries()], config.currencies);
